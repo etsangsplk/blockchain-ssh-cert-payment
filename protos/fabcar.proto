@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.fabcar";
+option java_outer_classname = "Fabcar";
+
+package fabcar;
+
+service FabcarService {
+	rpc queryCar(CarRequest) returns (CarResponse) {}
+}
+
+message CarRequest {
+	string car = 1;
+}
+
+message CarResponse {
+	string colour = 1;
+	string make = 2;
+	string model = 3;
+	string owner = 4;
+}

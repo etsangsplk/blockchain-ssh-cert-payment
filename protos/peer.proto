@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "hyperledger.fabric.bmt.peer";
+option java_outer_classname = "PeerMessages";
+
+package peer;
+
+service PeerMessagesService {
+	rpc saveCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
+	rpc getCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
+	rpc revokeCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
+	rpc stop(Empty) returns (Empty) {}
+}
+
+message CustomerCertificateRequest {
+	string serialNo = 1;
+	string certificate = 2;
+	string hashedSsn = 3;
+	string status = 4;
+	string notBefore = 5;
+	string notAfter = 6;
+	string revokeDate = 7;
+}
+
+message CustomerCertificateReply {
+	bool result = 1;
+	string errorMsg = 2;
+	string serialNo = 3;
+	string certificate = 4;
+	string hashedSsn = 5;
+	string status = 6;
+	string notBefore = 7;
+	string notAfter = 8;
+}
+
+message Empty {
+
+}
