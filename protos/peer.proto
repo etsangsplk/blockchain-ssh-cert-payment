@@ -17,19 +17,19 @@ message CustomerCertificateRequest {
 	string serialNo = 1;
 	string certificate = 2;
 	string hashedSsn = 3;
-	string status = 4;
+	string certificateStatus = 4;
 	string notBefore = 5;
 	string notAfter = 6;
 	string revokeDate = 7;
 }
-// Can I return only few properties? saveCertificate only return result and errorMsg.
+
 message CustomerCertificateReply {
 	bool result = 1;
 	string errorMsg = 2;
 	string serialNo = 3;
 	string certificate = 4;
 	string hashedSsn = 5;
-	string status = 6; //need to change. status already used by response property
+	string certificateStatus = 6; 
 	string notBefore = 7;
 	string notAfter = 8;
 }
