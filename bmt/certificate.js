@@ -16,7 +16,7 @@ function createCertificate(options, call) {
     }).then((user) => {
         console.log("Check user is enrolled, and set a query URL in the network")
         if (user === undefined || user.isEnrolled() === false) {
-            consoel.error("User not defined, or not enrolled - error")
+            console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
         channel.addPeer(client.newPeer(options.peer_url))
@@ -133,7 +133,7 @@ function queryCertificate(options, call) {
     }).then((user) => {
         console.log("Check user is enrolled, and set a query URL in the network")
         if (user === undefined || user.isEnrolled() === false) {
-            consoel.error("User not defined, or not enrolled - error")
+            console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
         channel.addPeer(client.newPeer(options.peer_url))
