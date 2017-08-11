@@ -9,6 +9,7 @@ package peer;
 service PeerMessagesService {
 	rpc saveCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc getCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
+	rpc verifySignature(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc revokeCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc stop(Empty) returns (Empty) {}
 }
@@ -20,7 +21,8 @@ message CustomerCertificateRequest {
 	string certificateStatus = 4;
 	string notBefore = 5;
 	string notAfter = 6;
-	string revokeDate = 7;
+	string publicKey = 7;
+	string signature = 8;
 }
 
 message CustomerCertificateReply {
