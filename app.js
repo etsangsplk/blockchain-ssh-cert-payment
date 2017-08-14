@@ -12,8 +12,10 @@ const peer_proto = grpc.load(PROTO_PATH).peer
 let options = {
     wallet_path: path.join(__dirname, './creds'),
     user_id: 'PeerAdmin',
-    channel_id: 'fabcar',
-    peer_url: 'grpc://localhost:7051',
+    channel_id: 'mychannel',
+    chaincode_id: 'certificate',
+    network_url: 'grpc://localhost:7051',
+    endorser_url: [],
     event_url: 'grpc://localhost:7053',
     orderer_url: 'grpc://localhost:7050'
 }
@@ -26,7 +28,7 @@ let tx_id = null
 // Test only
 /*
 function saveCertificate(call,callback) {
-    let data = { 
+    let callbackResponse = { 
         result: true,
         errorMsg: ''        
     }
@@ -42,27 +44,27 @@ function saveCertificate(call,callback) {
         console.log("Check user is enrolled, and set a query URL in the network")
         if (user === null) {
             console.error("User not defined, or not enrolled - error")
-            data.result = false
-            data.errorMsg = 'User not defined, or not enrolled - error'
+            callbackResponse.result = false
+            callbackResponse.errorMsg = 'User not defined, or not enrolled - error'
         }
         channel = client.newChannel(options.channel_id)
-        let peerObj = client.newPeer(options.peer_url)
+        let peerObj = client.newPeer(options.network_url)
         channel.addPeer(peerObj)
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
-        callback(null, data)
+        callback(null, callbackResponse)
         return
     }).catch((err) => {
-        data.result = false
-        data.errorMsg = err
-        callback(null, data)
+        callbackResponse.result = false
+        callbackResponse.errorMsg = err
+        callback(null, callbackResponse)
         console.error("Caught Error", err)
     })
 }
 */
 
 function saveCertificate(call, callback) {
-    let data = { 
+    let callbackResponse = { 
         result: true,
         errorMsg: ''        
     }
@@ -78,11 +80,11 @@ function saveCertificate(call, callback) {
         console.log("Check user is enrolled, and set a query URL in the network")
         if (user === null) {
             console.error("User not defined, or not enrolled - error")
-            data.result = false
-            data.errorMsg = 'User not defined, or not enrolled - error'
+            callbackResponse.result = false
+            callbackResponse.errorMsg = 'User not defined, or not enrolled - error'
         }
         channel = client.newChannel(options.channel_id)
-        let peerObj = client.newPeer(options.peer_url);
+        let peerObj = client.newPeer(options.network_url);
         channel.addPeer(peerObj)
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
@@ -116,9 +118,9 @@ function saveCertificate(call, callback) {
             console.log('Transaction proposal was good')
         } else {
             console.error('Transaction proposal was bad')
-            if (data.result) {
-                data.result = false
-                data.errorMsg = 'The transaction proposal was invalid'
+            if (callbackResponse.result) {
+                callbackResponse.result = false
+                callbackResponse.errorMsg = 'The transaction proposal was invalid'
             }
         }
         if (isProposalGood) {
@@ -153,9 +155,9 @@ function saveCertificate(call, callback) {
 
                     if (code !== 'VALID') {
                         console.error('The transaction was invalid, code = ' + code)
-                        if (data.result) {
-                            data.result = false
-                            data.errorMsg = 'The transaction was invalid, code = ' + code
+                        if (callbackResponse.result) {
+                            callbackResponse.result = false
+                            callbackResponse.errorMsg = 'The transaction was invalid, code = ' + code
                         }
                         reject()
                     } else {
@@ -173,36 +175,35 @@ function saveCertificate(call, callback) {
                 console.error(
                     'Failed to send transaction and get notifications within the timeout period.'
                 )
-                if (data.result) {
-                    data.result = false
-                    data.errorMsg = 'Failed to send transaction and get notifications within the timeout period.'
+                if (callbackResponse.result) {
+                    callbackResponse.result = false
+                    callbackResponse.errorMsg = 'Failed to send transaction and get notifications within the timeout period.'
                 }
-                callback(null, data)
                 return 'Failed to send transaction and get notifications within the timeout period.'
             })
         } else {
             console.error(
                 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
             )
-            if (data.result) {
-                data.result = false
-                data.errorMsg = 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
+            if (callbackResponse.result) {
+                callbackResponse.result = false
+                callbackResponse.errorMsg = 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
             }
             return 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
         }
     }).then((response) => {
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
-            data.result = true
-            callback(null, data)
+            callbackResponse.result = true
+            callback(null, callbackResponse)
         } else {
             console.error('Failed to order the transaction.')
-            callback(null, data)
+            callback(null, callbackResponse)
         }
     }).catch((err) => {
-        data.result = false
-        data.errorMsg = err
-        callback(null, data)
+        callbackResponse.result = false
+        callbackResponse.errorMsg = err
+        callback(null, callbackResponse)
         console.error("Caught Error", err)
     })
 }
@@ -224,14 +225,14 @@ function getCertificate(call, callback) {
             console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
-        channel.addPeer(client.newPeer(options.peer_url))
+        channel.addPeer(client.newPeer(options.network_url))
         return
     }).then(() => {
         console.log("Make query")
         let transaction_id = client.newTransactionID();
         console.log("Assigning transaction_id: ", transaction_id._transaction_id);
         let request = {
-            chaincodeId: userOptions.chaincode_id,
+            chaincodeId: options.chaincode_id,
             txId: transaction_id,
             fcn: 'getCertificate',
             args: [ call.request.serialNo ]
@@ -269,14 +270,14 @@ function verifySignature(call, callback) {
             console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
-        channel.addPeer(client.newPeer(options.peer_url))
+        channel.addPeer(client.newPeer(options.network_url))
         return
     }).then(() => {
         console.log("Verify Signature")
         let transaction_id = client.newTransactionID();
         console.log("Assigning transaction_id: ", transaction_id._transaction_id);
         let request = {
-            chaincodeId: userOptions.chaincode_id,
+            chaincodeId: options.chaincode_id,
             txId: transaction_id,
             fcn: 'checkValidation',
             args:  [ call.request.serialNo,
@@ -303,19 +304,19 @@ function verifySignature(call, callback) {
 }
 
 function revokeCertificate(call, callback) {
-    let data = { 
+    let callbackResponse = { 
         result: true,
         errorMsg: ''        
     }
-    callback(null, data);
+    callback(null, callbackResponse);
 }
 
 function stop(call, callback) {
-    let data = { 
+    let callbackResponse = { 
         result: true,
         errorMsg: ''        
     }
-    callback(null, data);
+    callback(null, callbackResponse);
 }
 
 function main() {

@@ -3,6 +3,11 @@
 const hfc = require('fabric-client')
 const path = require('path')
 const util = require('util')
+const grpc = require('grpc')
+
+function invoke(options, fcn, args, callbackResponse) {
+    
+}
 
 function createCertificate(options, call) {
     return Promise.resolve().then(() => {
@@ -156,6 +161,6 @@ function queryCertificate(options, call) {
 
 
 module.exports = {
-    createCertificate,
-    queryCertificate
+    invoke,
+    query
 }
