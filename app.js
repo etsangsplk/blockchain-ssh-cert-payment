@@ -5,7 +5,7 @@ const PROTO_PATH = __dirname + '/protos/peer.proto'
 const hfc = require('fabric-client')
 const path = require('path')
 const util = require('util')
-const grpc = requrie('grpc')
+const grpc = require('grpc')
 const cert = require('./bmt/certificate')
 const peer_proto = grpc.load(PROTO_PATH).peer
 
@@ -23,10 +23,12 @@ let client = null
 let targets = []
 let tx_id = null
 
-function saveCertificate(call, callback) {
+// Test only
+/*
+function saveCertificate(call,callback) {
     let data = { 
         result: true,
-        message: ''        
+        errorMsg: ''        
     }
     Promise.resolve().then(() => {
         console.log("Create a client and set the wallet location")
@@ -41,10 +43,47 @@ function saveCertificate(call, callback) {
         if (user === null) {
             console.error("User not defined, or not enrolled - error")
             data.result = false
-            data.message = 'User not defined, or not enrolled - error'
+            data.errorMsg = 'User not defined, or not enrolled - error'
         }
         channel = client.newChannel(options.channel_id)
-        channel.addPeer(client.newPeer(options.peer_url))
+        let peerObj = client.newPeer(options.peer_url)
+        channel.addPeer(peerObj)
+        channel.addOrderer(client.newOrderer(options.orderer_url))
+        targets.push(peerObj)
+        callback(null, data)
+        return
+    }).catch((err) => {
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
+        console.error("Caught Error", err)
+    })
+}
+*/
+
+function saveCertificate(call, callback) {
+    let data = { 
+        result: true,
+        errorMsg: ''        
+    }
+    Promise.resolve().then(() => {
+        console.log("Create a client and set the wallet location")
+        client = new hfc()
+        return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
+    }).then((wallet) => {
+        console.log("Set wallet path, and associate user ", options.user_id, " with application")
+        client.setStateStore(wallet)
+        return client.getUserContext(options.user_id, true)
+    }).then((user) => {
+        console.log("Check user is enrolled, and set a query URL in the network")
+        if (user === null) {
+            console.error("User not defined, or not enrolled - error")
+            data.result = false
+            data.errorMsg = 'User not defined, or not enrolled - error'
+        }
+        channel = client.newChannel(options.channel_id)
+        let peerObj = client.newPeer(options.peer_url);
+        channel.addPeer(peerObj)
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
         return
@@ -56,12 +95,11 @@ function saveCertificate(call, callback) {
             targets: targets,
             chaincodeId: options.chaincode_id,
             fcn: 'saveCertificate',
-            args: [ request.call.serialNo,
-                    request.call.certificate,
-                    request.call.hashedSsn,
-                    request.call.status,
-                    request.call.notBefore,
-                    request.call.notAfter
+            args: [ call.request.serialNo,
+                    call.request.hashedSsn,
+                    call.request.notBefore,
+                    call.request.notAfter,
+                    call.request.certificate
                     ],
             chainId: options.channel_id,
             txId: tx_id
@@ -80,7 +118,7 @@ function saveCertificate(call, callback) {
             console.error('Transaction proposal was bad')
             if (data.result) {
                 data.result = false
-                data.message = 'The transaction proposal was invalid'
+                data.errorMsg = 'The transaction proposal was invalid'
             }
         }
         if (isProposalGood) {
@@ -117,7 +155,7 @@ function saveCertificate(call, callback) {
                         console.error('The transaction was invalid, code = ' + code)
                         if (data.result) {
                             data.result = false
-                            data.message = 'The transaction was invalid, code = ' + code
+                            data.errorMsg = 'The transaction was invalid, code = ' + code
                         }
                         reject()
                     } else {
@@ -137,7 +175,7 @@ function saveCertificate(call, callback) {
                 )
                 if (data.result) {
                     data.result = false
-                    data.message = 'Failed to send transaction and get notifications within the timeout period.'
+                    data.errorMsg = 'Failed to send transaction and get notifications within the timeout period.'
                 }
                 callback(null, data)
                 return 'Failed to send transaction and get notifications within the timeout period.'
@@ -148,7 +186,7 @@ function saveCertificate(call, callback) {
             )
             if (data.result) {
                 data.result = false
-                data.message = 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
+                data.errorMsg = 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
             }
             return 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
         }
@@ -163,7 +201,7 @@ function saveCertificate(call, callback) {
         }
     }).catch((err) => {
         data.result = false
-        data.message = err
+        data.errorMsg = err
         callback(null, data)
         console.error("Caught Error", err)
     })
@@ -182,7 +220,7 @@ function getCertificate(call, callback) {
         return client.getUserContext(options.user_id, true)
     }).then((user) => {
         console.log("Check user is enrolled, and set a query URL in the network")
-        if (user === undefined || user.isEnrolled() === false) {
+        if (user === null) {
             console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
@@ -196,9 +234,8 @@ function getCertificate(call, callback) {
             chaincodeId: userOptions.chaincode_id,
             txId: transaction_id,
             fcn: 'getCertificate',
-            args: []
+            args: [ call.request.serialNo ]
         }
-        request.args.push(call.request.serialNo)
         return channel.queryByChaincode(request);
     }).then((query_responses) => {
         console.log("returned from query")
@@ -217,14 +254,74 @@ function getCertificate(call, callback) {
     }) 
 }
 
-function revokeCertificate(call, callback)
+function verifySignature(call, callback) {
+    Promise.resolve().then(() => {
+        console.log("Create a client and set the wallet location")
+        client = new hfc()
+        return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
+    }).then((wallet) => {
+        console.log("Set wallet path, and associate user ", options.user_id, " with application")
+        client.setStateStore(wallet)
+        return client.getUserContext(options.user_id, true)
+    }).then((user) => {
+        console.log("Check user is enrolled, and set a query URL in the network")
+        if (user === null) {
+            console.error("User not defined, or not enrolled - error")
+        }
+        channel = client.newChannel(options.channel_id)
+        channel.addPeer(client.newPeer(options.peer_url))
+        return
+    }).then(() => {
+        console.log("Verify Signature")
+        let transaction_id = client.newTransactionID();
+        console.log("Assigning transaction_id: ", transaction_id._transaction_id);
+        let request = {
+            chaincodeId: userOptions.chaincode_id,
+            txId: transaction_id,
+            fcn: 'checkValidation',
+            args:  [ call.request.serialNo,
+                    call.request.hashedSsn,
+                    call.request.signature 
+                    ]
+        }
+        return channel.queryByChaincode(request);
+    }).then((query_responses) => {
+        console.log("returned from query")
+        
+        if (query_responses[0] instanceof Error) {
+            console.error("error from query = ", query_responses[0])
+        } else if (!query_responses.length) {
+            console.log("No payloads were returned from query")
+        } else {
+            console.log(JSON.parse(query_responses))            
+            callback(null, JSON.parse(query_responses[0])) // Return query result to grpc client
+            return query_responses[0]
+        }
+    }).catch((err) => {
+        console.error("Caught Error", err)
+    }) 
+}
 
-function stop(call, callback)
+function revokeCertificate(call, callback) {
+    let data = { 
+        result: true,
+        errorMsg: ''        
+    }
+    callback(null, data);
+}
+
+function stop(call, callback) {
+    let data = { 
+        result: true,
+        errorMsg: ''        
+    }
+    callback(null, data);
+}
 
 function main() {
   let server = new grpc.Server()
-  server.addService(fabcar_proto.FabcarService.service, {queryCar: queryCar})
-  server.bind('172.16.5.18:50051', grpc.ServerCredentials.createInsecure())
+  server.addService(peer_proto.PeerMessagesService.service, {saveCertificate: saveCertificate, getCertificate: getCertificate, verifySignature: verifySignature, revokeCertificate: revokeCertificate, stop: stop})
+  server.bind('192.168.70.7:60301', grpc.ServerCredentials.createInsecure())
   server.start()
 }
 
