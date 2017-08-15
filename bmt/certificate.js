@@ -161,7 +161,7 @@ function createCertificate(options, call) {
             console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
-        channel.addPeer(client.newPeer(options.peer_url))
+        channel.addPeer(client.newPeer(options.network_url))
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
         return
@@ -278,7 +278,7 @@ function queryCertificate(options, call) {
             console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
-        channel.addPeer(client.newPeer(options.peer_url))
+        channel.addPeer(client.newPeer(options.network_url))
         return
     }).then(() => {
         console.log("Make query")

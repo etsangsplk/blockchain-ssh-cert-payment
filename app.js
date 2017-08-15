@@ -14,10 +14,10 @@ let options = {
     user_id: 'PeerAdmin',
     channel_id: 'mychannel',
     chaincode_id: 'certificate',
-    network_url: 'grpc://localhost:7051',
+    network_url: 'grpc://10.178.10.173:7051',
     endorser_url: [],
-    event_url: 'grpc://localhost:7053',
-    orderer_url: 'grpc://localhost:7050'
+    event_url: 'grpc://10.178.10.173:7053',
+    orderer_url: 'grpc://10.178.10.182:7050'
 }
 
 let data = {
@@ -213,5 +213,5 @@ function getServer() {
 }
 
 let routeServer = getServer()
-routeServe.bind('192.168.70.7:60301', grpc.ServerCredentials.createInsecure())
+routeServe.bind('localhost:60301', grpc.ServerCredentials.createInsecure())
 routeServer.start()
