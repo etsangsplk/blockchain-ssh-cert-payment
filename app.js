@@ -20,15 +20,22 @@ let options = {
     orderer_url: 'grpc://localhost:7050'
 }
 
+let data = {
+    result: false,
+    errorMsg: ''
+}
+
+// Test only
+/*
+
 // let channel = {}
 // let client = null
 // let targets = []
 // let tx_id = null
 
-// Test only
-/*
+
 function saveCertificate(call,callback) {
-    let callbackResponse = { 
+    let data = { 
         result: true,
         errorMsg: ''        
     }
@@ -44,52 +51,48 @@ function saveCertificate(call,callback) {
         console.log("Check user is enrolled, and set a query URL in the network")
         if (user === null) {
             console.error("User not defined, or not enrolled - error")
-            callbackResponse.result = false
-            callbackResponse.errorMsg = 'User not defined, or not enrolled - error'
+            data.result = false
+            data.errorMsg = 'User not defined, or not enrolled - error'
         }
         channel = client.newChannel(options.channel_id)
         let peerObj = client.newPeer(options.network_url)
         channel.addPeer(peerObj)
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
-        callback(null, callbackResponse)
+        callback(null, data)
         return
     }).catch((err) => {
-        callbackResponse.result = false
-        callbackResponse.errorMsg = err
-        callback(null, callbackResponse)
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
         console.error("Caught Error", err)
     })
 }
 */
 
 function saveCertificate(call, callback) {
-    let callbackResponse = { 
-        result: true,
-        errorMsg: ''        
-    }
-    cert.invoke(options, 
-            'create', 
-            [ call.request.serialNo,
+    cert.invoke(options,
+        'create', [call.request.serialNo,
             call.request.hashedSsn,
             call.request.notBefore,
             call.request.notAfter,
             call.request.certificate
-            ],
-            callbackResponse
+        ]
     ).then((response) => {
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
-            callbackResponse.result = true
-            callback(null, callbackResponse)
+            data.result = true
+            callback(null, data)
         } else {
             console.error('Failed to order the transaction.')
-            callback(null, callbackResponse)
+            data.result = false
+            data.errorMsg = response
+            callback(null, data)
         }
     }).catch((err) => {
-        callbackResponse.result = false
-        callbackResponse.errorMsg = err
-        callback(null, callbackResponse)
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
         console.error("Caught Error", err)
     })
 }
@@ -97,107 +100,95 @@ function saveCertificate(call, callback) {
 
 
 function getCertificate(call, callback) {
-    let callbackResponse = { 
-        result: true,
-        errorMsg: ''        
-    }
-    cert.query(options, 
-        'getCertificate', 
-        [ call.request.serialNo ], 
-        callbackResponse
+
+    cert.query(options,
+        'getCertificate', [call.request.serialNo]
     ).then((query_responses) => {
         console.log("returned from query")
-        
+
         if (query_responses[0] instanceof Error) {
-            callbackResponse.result = false
-            callbackResponse.errorMsg = "error from query = " + query_responses[0]
-            callback(null, callbackResponse)
+            data.result = false
+            data.errorMsg = "error from query = " + query_responses[0]
+            callback(null, data)
             console.error("error from query = ", query_responses[0])
         } else if (!query_responses.length) {
-            callbackResponse.result = false
-            callbackResponse.errorMsg = "No payloads were returned from query"
-            callback(null, callbackResponse)
+            data.result = false
+            data.errorMsg = "No payloads were returned from query"
+            callback(null, data)
             console.log("No payloads were returned from query")
         } else {
-            console.log(JSON.parse(query_responses))            
+            console.log(JSON.parse(query_responses))
             callback(null, JSON.parse(query_responses[0])) // Return query result to grpc client
         }
     }).catch((err) => {
-        callbackResponse.result = false
-        callbackResponse.errorMsg = err
-        callback(null, callbackResponse)
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
         console.error("Caught Error", err)
-    }) 
+    })
 }
 
 function verifySignature(call, callback) {
-    let callbackResponse = { 
-        result: true,
-        errorMsg: ''        
-    }
+
     cert.query(options,
-        'checkValidation',
-        [ call.request.serialNo,
-        call.request.hashedSsn,
-        call.request.signature 
-        ],
-        callbackResponse
+        'checkValidation', [call.request.serialNo,
+            call.request.hashedSsn,
+            call.request.signature
+        ]
     ).then((query_responses) => {
         console.log("returned from query")
-        
+
         if (query_responses[0] instanceof Error) {
-            callbackResponse.result = false
-            callbackResponse.errorMsg = "error from query = " + query_responses[0]
-            callback(null, callbackResponse)
+            data.result = false
+            data.errorMsg = "error from query = " + query_responses[0]
+            callback(null, data)
             console.error("error from query = ", query_responses[0])
         } else if (!query_responses.length) {
-            callbackResponse.result = false
-            callbackResponse.errorMsg = "No payloads were returned from query"
-            callback(null, callbackResponse)
+            data.result = false
+            data.errorMsg = "No payloads were returned from query"
+            callback(null, data)
             console.log("No payloads were returned from query")
         } else {
-            console.log(JSON.parse(query_responses))            
+            console.log(JSON.parse(query_responses))
             callback(null, JSON.parse(query_responses[0])) // Return query result to grpc client
         }
     }).catch((err) => {
-        callbackResponse.result = false
-        callbackResponse.errorMsg = err
-        callback(null, callbackResponse)
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
         console.error("Caught Error", err)
-    }) 
+    })
 }
 
 function revokeCertificate(call, callback) {
-    let callbackResponse = { 
-        result: true,
-        errorMsg: ''        
-    }
-    cert.invoke(options, 
-            'discard', 
-            [ call.request.serialNo,
+
+    cert.invoke(options,
+        'discard', [call.request.serialNo,
             call.request.signature
-            ],
-            callbackResponse
+        ]
     ).then((response) => {
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
-            callbackResponse.result = true
-            callback(null, callbackResponse)
+            data.result = true
+            callback(null, data)
         } else {
             console.error('Failed to order the transaction.')
-            callback(null, callbackResponse)
+            data.result = false
+            data.errorMsg = response
+            callback(null, data)
         }
     }).catch((err) => {
-        callbackResponse.result = false
-        callbackResponse.errorMsg = err
-        callback(null, callbackResponse)
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
         console.error("Caught Error", err)
     })
 }
 
 function stop(call, callback) {
-    callback(null)
-    routeServer.forceShutdown()
+    callback(null, () => {
+        routeServer.forceShutdown()
+    })
 }
 
 // function main() {
@@ -210,15 +201,15 @@ function stop(call, callback) {
 // main() // Initiate grpc server
 
 function getServer() {
-  let server = new grpc.Server();
-  server.addService(peer_proto.PeerMessagesService.service, {
-      saveCertificate: saveCertificate, 
-      getCertificate: getCertificate, 
-      verifySignature: verifySignature, 
-      revokeCertificate: revokeCertificate, 
-      stop: stop
+    let server = new grpc.Server();
+    server.addService(peer_proto.PeerMessagesService.service, {
+        saveCertificate: saveCertificate,
+        getCertificate: getCertificate,
+        verifySignature: verifySignature,
+        revokeCertificate: revokeCertificate,
+        stop: stop
     })
-  return server;
+    return server;
 }
 
 let routeServer = getServer()

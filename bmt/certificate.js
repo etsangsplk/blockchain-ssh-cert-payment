@@ -5,7 +5,7 @@ const path = require('path')
 const util = require('util')
 const grpc = require('grpc')
 
-function invoke(options, fcn, args, callbackResponse) {
+function invoke(options, fcn, args) {
     let channel = {}
     let client = null
     let targets = []
@@ -22,8 +22,6 @@ function invoke(options, fcn, args, callbackResponse) {
         console.log("Check user is enrolled, and set a query URL in the network")
         if (user === null) {
             console.error("User not defined, or not enrolled - error")
-            callbackResponse.result = false
-            callbackResponse.errorMsg = 'User not defined, or not enrolled - error'
         }
         channel = client.newChannel(options.channel_id)
         let peerObj = client.newPeer(options.network_url);
@@ -34,7 +32,7 @@ function invoke(options, fcn, args, callbackResponse) {
     }).then(() => {
         tx_id = client.newTransactionID()
         console.log("Assigning transaction_id: ", tx_id._transaction_id)
-        // send proposal to endorser
+            // send proposal to endorser
         let request = {
             targets: targets,
             chaincodeId: options.chaincode_id,
@@ -55,10 +53,6 @@ function invoke(options, fcn, args, callbackResponse) {
             console.log('Transaction proposal was good')
         } else {
             console.error('Transaction proposal was bad')
-            if (callbackResponse.result) {
-                callbackResponse.result = false
-                callbackResponse.errorMsg = 'The transaction proposal was invalid'
-            }
         }
         if (isProposalGood) {
             console.log(util.format(
@@ -66,13 +60,13 @@ function invoke(options, fcn, args, callbackResponse) {
                 proposalResponses[0].response.status, proposalResponses[0].response.message,
                 proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
             let request = {
-                proposalResponses: proposalResponses,
-                proposal: proposal,
-                header: header
-            }
-            // set the transaction listener and set a timeout of 30sec
-            // if the transaction did not get committed within the timeout period,
-            // fail the test
+                    proposalResponses: proposalResponses,
+                    proposal: proposal,
+                    header: header
+                }
+                // set the transaction listener and set a timeout of 30sec
+                // if the transaction did not get committed within the timeout period,
+                // fail the test
             let transactionID = tx_id.getTransactionID()
             let eventPromises = []
             let eh = client.newEventHub()
@@ -92,10 +86,6 @@ function invoke(options, fcn, args, callbackResponse) {
 
                     if (code !== 'VALID') {
                         console.error('The transaction was invalid, code = ' + code)
-                        if (callbackResponse.result) {
-                            callbackResponse.result = false
-                            callbackResponse.errorMsg = 'The transaction was invalid, code = ' + code
-                        }
                         reject()
                     } else {
                         console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
@@ -112,26 +102,18 @@ function invoke(options, fcn, args, callbackResponse) {
                 console.error(
                     'Failed to send transaction and get notifications within the timeout period.'
                 )
-                if (callbackResponse.result) {
-                    callbackResponse.result = false
-                    callbackResponse.errorMsg = 'Failed to send transaction and get notifications within the timeout period.'
-                }
                 return 'Failed to send transaction and get notifications within the timeout period.'
             })
         } else {
             console.error(
                 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
             )
-            if (callbackResponse.result) {
-                callbackResponse.result = false
-                callbackResponse.errorMsg = 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
-            }
             return 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
         }
     })
 }
 
-function query(options, fcn, args, callbackResponse) {
+function query(options, fcn, args) {
     let channel = {}
     let client = null
     return Promise.resolve().then(() => {
