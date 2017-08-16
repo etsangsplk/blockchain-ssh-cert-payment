@@ -23,6 +23,7 @@ message CustomerCertificateRequest {
 	string notAfter = 6;
 	string publicKey = 7;
 	string signature = 8;
+	string currentDate = 9;
 }
 
 message CustomerCertificateReply {
