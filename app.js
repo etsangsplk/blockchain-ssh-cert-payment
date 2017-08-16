@@ -214,9 +214,12 @@ function revokeCertificate(call, callback) {
 }
 
 function stop(call, callback) {
-    callback(null, () => {
-        routeServer.forceShutdown()
-    })
+    routeServer.tryShutdown(() => {
+            callback(null)
+        })
+        // callback(null, () => {
+        //     routeServer.forceShutdown()
+        // })
 }
 
 // function main() {
