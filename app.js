@@ -152,31 +152,31 @@ function verifySignature(call, callback) {
     ).then((query_responses) => {
         console.log("returned from query")
 
-        if (query_responses === 'Y') {
-            console.log('Successfully verify the signature')
-            data.result = true
-            callback(null, data)
-        } else {
-            console.error('Failed to verify the signature.')
-            data.result = false
-            data.errorMsg = query_responses
-            callback(null, data)
-        }
-
-        // if (query_responses[0] instanceof Error) {
-        //     data.result = false
-        //     data.errorMsg = "error from query = " + query_responses[0]
+        // if (query_responses === 'Y') {
+        //     console.log('Successfully verify the signature')
+        //     data.result = true
         //     callback(null, data)
-        //     console.error("error from query = ", query_responses[0])
-        // } else if (!query_responses.length) {
-        //     data.result = false
-        //     data.errorMsg = "No payloads were returned from query"
-        //     callback(null, data)
-        //     console.log("No payloads were returned from query")
         // } else {
-        //     console.log(JSON.parse(query_responses))
-        //     callback(null, JSON.parse(query_responses[0])) // Return query result to grpc client
+        //     console.error('Failed to verify the signature.')
+        //     data.result = false
+        //     data.errorMsg = query_responses
+        //     callback(null, data)
         // }
+
+        if (query_responses[0] instanceof Error) {
+            data.result = false
+            data.errorMsg = "error from query = " + query_responses[0]
+            callback(null, data)
+            console.error("error from query = ", query_responses[0])
+        } else if (!query_responses.length) {
+            data.result = false
+            data.errorMsg = "No payloads were returned from query"
+            callback(null, data)
+            console.log("No payloads were returned from query")
+        } else {
+            console.log(JSON.parse(query_responses))
+            callback(null, JSON.parse(query_responses[0])) // Return query result to grpc client
+        }
     }).catch((err) => {
         data.result = false
         data.errorMsg = err
@@ -195,7 +195,7 @@ function revokeCertificate(call, callback) {
             call.request.signature
         ]
     ).then((response) => {
-        if (response === 'Y') {
+        if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true
             callback(null, data)
