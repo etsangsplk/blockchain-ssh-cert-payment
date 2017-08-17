@@ -97,7 +97,9 @@ function invoke(options, fcn, args) {
             let sendPromise = channel.sendTransaction(request)
             return Promise.all([sendPromise].concat(eventPromises)).then((results) => {
                 console.log(' event promise all complete and testing complete')
-                return results[0] // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
+                let result = results[0]
+                result.payload = proposalResponses[0].response.payload
+                return result // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
             }).catch((err) => {
                 console.error(
                     'Failed to send transaction and get notifications within the timeout period.'

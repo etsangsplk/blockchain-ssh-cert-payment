@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "hyperledger.fabric.bmt.point";
+option java_outer_classname = "BmtPoint";
+
+package point;
+
+service BmtPointService {
+	// createAccount
+	// requestArgs: accountNo, accountType, issuerAccount, accountAmount 
+	// replyData: result, errorMsg 
+	rpc createAccount(PointRequest) returns (PointReply) {}
+	
+	// payPoint
+	// requestArgs: transactionDate(currentDate), fromAccountNo, toAccountNo, transactionAmount
+	// replyData: result, errorMsg, accountAmount
+	rpc payPoint(PointRequest) returns (PointReply) {}
+}
+
+message PointRequest {
+	string accountNo = 1;
+	string accountType = 2;
+	string issuerAccount = 3; // 발행은행 계좌
+	string accountAmount = 4;
+	string transactionId = 5;
+	string fromAccountNo = 6;
+	string toAccountNo = 7;
+	string transactionAmount = 8;
+}
+
+message PointReply {
+	bool result = 1;
+	string errorMsg = 2;
+	string resultMessage = 3;
+}
+
