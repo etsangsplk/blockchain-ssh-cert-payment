@@ -97,8 +97,7 @@ function invoke(options, fcn, args) {
             let sendPromise = channel.sendTransaction(request)
             return Promise.all([sendPromise].concat(eventPromises)).then((results) => {
                 console.log(' event promise all complete and testing complete')
-                console.log(results)
-                return results // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
+                return results[0] // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
             }).catch((err) => {
                 console.error(
                     'Failed to send transaction and get notifications within the timeout period.'
@@ -143,6 +142,8 @@ function query(options, fcn, args) {
             fcn: fcn,
             args: args
         }
+        console.log('query fcn: ', fcn)
+        console.log('query args: ', args)
         return channel.queryByChaincode(request);
     })
 }
