@@ -20,6 +20,8 @@ let options = {
     orderer_url: 'grpc://10.178.10.182:7050'
 }
 
+
+// Create Account one by one
 function createAccount(call, callback) {
     let data = {
         result: false,
@@ -31,6 +33,34 @@ function createAccount(call, callback) {
             call.request.issuerAccount,
             call.request.accountAmount
         ]
+    ).then((response) => {
+        console.log('create response: ', response)
+        if (response.status === 'SUCCESS') {
+            console.log('Successfully sent transaction to the orderer.')
+            data.result = true
+            callback(null, data)
+        } else {
+            console.error('Failed to order the transaction.')
+            data.result = false
+            data.errorMsg = response
+            callback(null, data)
+        }
+    }).catch((err) => {
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
+        console.error("Caught Error", err)
+    })
+}
+
+// Create Account by 1000 sets
+function createAccounts(call, callback) {
+    let data = {
+        result: false,
+        errorMsg: ''
+    }
+    bmt.invoke(options,
+        'createAccounts', [call.request.accountSets]
     ).then((response) => {
         console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
@@ -85,15 +115,18 @@ function payPoint(call, callback) {
     })
 }
 
+
+
 function getServer() {
     let server = new grpc.Server();
     server.addService(point_proto.BmtPointService.service, {
         createAccount: createAccount,
+        createAccounts: createAccounts,
         payPoint: payPoint
     })
     return server;
 }
 
 let routeServer = getServer()
-routeServer.bind('localhost:60301', grpc.ServerCredentials.createInsecure())
+routeServer.bind('localhost:60302', grpc.ServerCredentials.createInsecure())
 routeServer.start()

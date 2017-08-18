@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>{{pageTitle}}</title>
-    </head>
-    <body>
-        <p>{{name}}</p>
+{{> header}}
+
+        <form action="/transfer" method="post">
+            <label for="fromAccount">Transfer from: </label>
+            <input id="fromAccount" type="text" name="name_field" value="Default name for team.">
+            <input type="submit" value="OK">
+            <br>
+            <label for="team_name">Transfer from: </label>
+            <input id="team_name" type="text" name="name_field" value="Default name for team.">
+            <input type="submit" value="OK">
+        </form>
     
-    </body>
-</html>
+{{> footer}}

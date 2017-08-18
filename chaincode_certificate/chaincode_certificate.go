@@ -29,6 +29,7 @@ import (
 	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
+	"crypto/sha256"
 	"encoding/pem"
 	"encoding/hex"
 
@@ -280,15 +281,34 @@ func verifyPublicKey(publicKey string, residentNo string, signedResidentNo strin
 		return str
 	}
 
-	decoded, err := hex.DecodeString(signedResidentNo)
+	decodedSigniture, err := hex.DecodeString(signedResidentNo)
 	if err != nil {
-		str = "hex.DecodeString error"
+		str = "hex.DecodeString error : decodedSigniture"
 		fmt.Println(str)
 		return str
 	}
 
-	//verify Signature
+	decodedResidentNo, err := hex.DecodeString(residentNo)
+	if err != nil {
+		str = "hex.DecodeString error : decodedResidentNo"
+		fmt.Println(str)
+		return str
+	}
+	sha256ResidentNo := sha256.Sum256(decodedResidentNo)
+	
+	//verify Signature PSS
+/*
 	err = rsa.VerifyPSS(pub.(*rsa.PublicKey), crypto.SHA256, []byte(residentNo), decoded, &opts)
+	if err == nil {
+		str = "Y"
+	} else {
+		str = "verification failed"
+		fmt.Println(str)
+		return str
+	}
+*/
+	//verify Signature PKCS1v15
+	err = rsa.VerifyPKCS1v15(pub.(*rsa.PublicKey), crypto.SHA256, sha256ResidentNo[:], decodedSigniture)
 	if err == nil {
 		str = "Y"
 	} else {

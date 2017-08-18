@@ -32,7 +32,10 @@ function invoke(options, fcn, args) {
     }).then(() => {
         tx_id = client.newTransactionID()
         console.log("Assigning transaction_id: ", tx_id._transaction_id)
-            // send proposal to endorser
+        console.log('query fcn: ', fcn)
+        console.log('query args: ', args)
+
+        // send proposal to endorser
         let request = {
             targets: targets,
             chaincodeId: options.chaincode_id,
@@ -41,6 +44,7 @@ function invoke(options, fcn, args) {
             chainId: options.channel_id,
             txId: tx_id
         }
+
         return channel.sendTransactionProposal(request)
     }).then((results) => {
         let proposalResponses = results[0]
