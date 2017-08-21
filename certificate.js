@@ -98,7 +98,8 @@ function saveCertificates(call, callback) {
     bmt.invoke(options,
         'createCertificates', [call.request.certificateSets]
     ).then((response) => {
-        console.log('create response: ', response)
+        console.log('create response status: ', response.status)
+        console.log('create response payload: ', new Buffer(response.payload).toString('ascii'))
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true

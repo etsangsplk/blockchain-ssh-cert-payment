@@ -32,10 +32,10 @@ app.get('/account', (req, res) => {
     })
 })
 
-app.get('/info?account=:accountNo', (req, res) => {
-    console.log(req.params)
+app.get('/info', (req, res) => {
+    console.log('query parameter: ', req.param['account'])
     bmt.query(options,
-        'queryAccount', [req.params.accountNo]
+        'queryAccount', [req.param['account']]
     ).then((query_responses) => {
         console.log("returned from query ", query_responses)
 
@@ -61,6 +61,6 @@ app.get('/info?account=:accountNo', (req, res) => {
 
 // app.post()
 
-app.listen(3000, () => {
-    console.log('Server is up on port 3000')
+app.listen(3333, () => {
+    console.log('Server is up on port 3333')
 })
