@@ -11,12 +11,11 @@ let app = express()
 let options = {
     wallet_path: path.join(__dirname, './creds'),
     user_id: 'PeerAdmin',
-    channel_id: 'chnpoint',
+    channel_id: 'pointchannel',
     chaincode_id: 'chaincode_point',
-    network_url: 'grpc://10.178.10.173:7051',
-    // endorser_url: [],
-    event_url: 'grpc://10.178.10.173:7053',
-    orderer_url: 'grpc://10.178.10.182:7050'
+    network_url: 'grpc://10.178.10.147:7051',
+    event_url: 'grpc://10.178.10.147:7053',
+    orderer_url: 'grpc://10.178.10.131:7050'
 }
 
 hbs.registerPartials(__dirname + '/views/partials')

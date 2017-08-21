@@ -12,12 +12,48 @@ const peer_proto = grpc.load(PROTO_PATH).peer
 let options = {
     wallet_path: path.join(__dirname, './creds'),
     user_id: 'PeerAdmin',
-    channel_id: 'chncert',
+    channel_id: 'certificatechannel',
     chaincode_id: 'chaincode_certificate',
-    network_url: 'grpc://10.178.10.173:7051',
-    endorser_url: ['grpc://10.178.10.176:7051'],
-    event_url: 'grpc://10.178.10.173:7053',
-    orderer_url: 'grpc://10.178.10.182:7050'
+    // 10.178.10.131    orderer0.kfbbmt.com
+    // 10.178.10.137    orderer1.kfbbmt.com
+    // 10.178.10.140    orderer2.kfbbmt.com
+    // 10.178.10.147    peer0.bank.kfbbmt.com
+    // 10.178.10.162    peer1.bank.kfbbmt.com
+    // 10.178.10.177    peer2.bank.kfbbmt.com
+    // 10.178.10.181    peer3.bank.kfbbmt.com
+    // 10.178.10.183    peer4.bank.kfbbmt.com
+    // 10.178.10.184    peer5.bank.kfbbmt.com
+    // 10.178.10.187    peer6.bank.kfbbmt.com
+    // 10.178.10.185    peer7.bank.kfbbmt.com
+    // 10.178.195.190    peer8.bank.kfbbmt.com
+    // 10.178.195.131    peer9.bank.kfbbmt.com
+    // 10.178.195.134    peer10.bank.kfbbmt.com
+    // 10.178.195.141    peer11.bank.kfbbmt.com
+    // 10.178.195.142    peer12.bank.kfbbmt.com
+    // 10.178.195.239    peer13.bank.kfbbmt.com
+    // 10.178.195.148    peer14.bank.kfbbmt.com
+    // 10.178.195.149    peer15.bank.kfbbmt.com
+    // 10.178.195.150    peer16.bank.kfbbmt.com
+    network_url: 'grpc://10.178.10.147:7051',
+    endorser_url: ['grpc://10.178.10.162:7051',
+        'grpc://10.178.10.177:7051',
+        'grpc://10.178.10.181:7051',
+        'grpc://10.178.10.183:7051',
+        'grpc://10.178.10.184:7051',
+        'grpc://10.178.10.187:7051',
+        'grpc://10.178.10.185:7051',
+        'grpc://10.178.195.190:7051',
+        'grpc://10.178.195.131:7051',
+        'grpc://10.178.195.134:7051',
+        'grpc://10.178.195.141:7051',
+        'grpc://10.178.195.142:7051',
+        'grpc://10.178.195.239:7051',
+        'grpc://10.178.195.148:7051',
+        'grpc://10.178.195.149:7051',
+        'grpc://10.178.195.150:7051'
+    ],
+    event_url: 'grpc://10.178.10.147:7053',
+    orderer_url: 'grpc://10.178.10.131:7050'
 }
 
 function saveCertificate(call, callback) {
