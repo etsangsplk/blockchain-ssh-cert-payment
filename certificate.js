@@ -15,7 +15,7 @@ let options = {
     channel_id: 'chncert',
     chaincode_id: 'chaincode_certificate',
     network_url: 'grpc://10.178.10.173:7051',
-    // endorser_url: [],
+    endorser_url: ['grpc://10.178.10.176:7051'],
     event_url: 'grpc://10.178.10.173:7053',
     orderer_url: 'grpc://10.178.10.182:7050'
 }
@@ -60,14 +60,7 @@ function saveCertificates(call, callback) {
         errorMsg: ''
     }
     bmt.invoke(options,
-        'create', [call.request.serialNo, // SerialNo
-            call.request.serialNo.substring(0, 3), // Issuer
-            call.request.hashedSsn, // ResidentNo
-            call.request.publicKey, // PublicKey
-            call.request.notBefore, // StartDate
-            call.request.notAfter, // EndDate
-            call.request.certificate // FileCertificate
-        ]
+        'createCertificates', [call.request.certificateSets]
     ).then((response) => {
         console.log('create response: ', response)
         if (response.status === 'SUCCESS') {

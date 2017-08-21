@@ -31,6 +31,10 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
+type Accounts struct {
+	AccountSets []Account `json:"accountSets" `
+}
+
 type Account struct {
 	AccountNo string `json:"accountNo"`
 	AccountType string `json:"accountType"`
@@ -61,6 +65,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	if function == "createAccount" {
 		// create an account in the blockchain
 		return t.createAccount(stub, args)
+	} else if function == "createAccounts" {
+		// query an account
+		return t.createAccounts(stub, args)
 	} else if function == "queryAccount" {
 		// query an account
 		return t.queryAccount(stub, args)
@@ -82,7 +89,71 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 */
 	}
 
-	return shim.Error("Invalid invoke function name. Expecting \"createAccount\" \"queryAccount\" \"charge\" \"transfer\" \"pay\"")
+	return shim.Error("Invalid invoke function name. Expecting \"createAccount\" \"createAccounts\" \"queryAccount\" \"queryTransaction\" \"pay\"")
+}
+
+func (t *SimpleChaincode) createAccounts(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	var err error
+	var result string
+
+	var accounts Accounts
+	var accountsInBytes = []byte(args[0])	
+
+	err = json.Unmarshal(accountsInBytes, &accounts)
+	if err != nil {
+		fmt.Println("accounts unmarshal error : " + err.Error())
+		return shim.Error(err.Error())
+	}
+
+	accountSets := accounts.AccountSets
+
+	for i := range accountSets {
+	 	account := accountSets[i]
+		accountOutBytes, err := json.Marshal(account)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		err = stub.PutState(account.AccountNo, accountOutBytes)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		result = result + "account created : " + account.AccountNo + " -- "
+
+		// create initial transaction
+		var transaction Transaction
+
+		transaction.TransactionId = "initial" + account.AccountNo
+		transaction.TransactionDate = "initial"
+		transaction.FromAccountNo = "intial"
+		transaction.ToAccountNo = account.AccountNo
+		transaction.Amount = account.Amount
+
+		transactionOutBytes, err := json.Marshal(transaction)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		err = stub.PutState(transaction.TransactionId, transactionOutBytes)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		// composite key creation
+		indexName := "toaccountno~transactionid"
+		indexKey, err := stub.CreateCompositeKey(indexName, []string{account.AccountNo, transaction.TransactionId})
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		value := []byte{0x00}
+		stub.PutState(indexKey, value)
+
+		result = result + "transaction (initial) : " + account.Amount + " to " + account.AccountNo + " -- "
+
+	}
+
+	fmt.Println(result)
+
+	return shim.Success([]byte(result))
 }
 
 func (t *SimpleChaincode) createAccount(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -217,8 +288,8 @@ func (t *SimpleChaincode) pay(stub shim.ChaincodeStubInterface, args []string) p
 	var transactionDate, customerAccountNo, partnerAccountNo, amount string
 	var customerAccount Account
 	var partnerAccount Account
-	var customerBankAccount Account
-	var partnerBankAccount Account
+//	var customerBankAccount Account
+//	var partnerBankAccount Account
 	var transaction Transaction
 	var result string
 
@@ -264,7 +335,7 @@ func (t *SimpleChaincode) pay(stub shim.ChaincodeStubInterface, args []string) p
 
 		// composite key creation
 		indexName := "fromaccountno~transactionid"
-		indexKey, err := stub.CreateCompositeKey(indexName, []string{customerAccount.IssuerAccount, transaction.TransactionId})
+		indexKey, err := stub.CreateCompositeKey(indexName, []string{customerAccount.IssuerAccount, chargingTransaction.TransactionId})
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -272,7 +343,7 @@ func (t *SimpleChaincode) pay(stub shim.ChaincodeStubInterface, args []string) p
 		stub.PutState(indexKey, value)
 
 		indexName = "toaccountno~transactionid"
-		indexKey, err = stub.CreateCompositeKey(indexName, []string{customerAccountNo, transaction.TransactionId})
+		indexKey, err = stub.CreateCompositeKey(indexName, []string{customerAccountNo, chargingTransaction.TransactionId})
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -280,7 +351,7 @@ func (t *SimpleChaincode) pay(stub shim.ChaincodeStubInterface, args []string) p
 		stub.PutState(indexKey, value)
 
 
-		result = result + "transaction (charge) : " + strconv.Itoa(chargingAmount) + " transfered from " + customerBankAccount.AccountNo + " to " + customerAccountNo + " -- "
+		result = result + "transaction (charge) : " + strconv.Itoa(chargingAmount) + " transfered from " + customerAccount.IssuerAccount + " to " + customerAccountNo + " -- "
 	}
 
 	// create transactions
@@ -357,7 +428,7 @@ func (t *SimpleChaincode) pay(stub shim.ChaincodeStubInterface, args []string) p
 
 		// composite key creation
 		indexName := "fromaccountno~transactionid"
-		indexKey, err := stub.CreateCompositeKey(indexName, []string{partnerAccountNo, transaction.TransactionId})
+		indexKey, err := stub.CreateCompositeKey(indexName, []string{partnerAccountNo, refundTransaction.TransactionId})
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -365,14 +436,14 @@ func (t *SimpleChaincode) pay(stub shim.ChaincodeStubInterface, args []string) p
 		stub.PutState(indexKey, value)
 
 		indexName = "toaccountno~transactionid"
-		indexKey, err = stub.CreateCompositeKey(indexName, []string{partnerAccount.IssuerAccount, transaction.TransactionId})
+		indexKey, err = stub.CreateCompositeKey(indexName, []string{partnerAccount.IssuerAccount, refundTransaction.TransactionId})
 		if err != nil {
 			return shim.Error(err.Error())
 		}
 		value = []byte{0x00}
 		stub.PutState(indexKey, value)
 
-		result = result + "transaction (refund) : " + strconv.Itoa(refundAmount) + " transfered from " + partnerAccountNo + " to " + partnerBankAccount.AccountNo + " -- "
+		result = result + "transaction (refund) : " + strconv.Itoa(refundAmount) + " transfered from " + partnerAccountNo + " to " + partnerAccount.IssuerAccount + " -- "
 	}
 
 	return shim.Success([]byte(result))
@@ -402,7 +473,7 @@ func (t *SimpleChaincode) queryAccountAmount(stub shim.ChaincodeStubInterface, a
 		}
 		returnedAccountNo := compositeKeyParts[0]
 		transactionId := compositeKeyParts[1]
-		fmt.Printf("- found a from-transaction index:%s accontNo:%s transactionId:%s\n", objectType, returnedAccountNo, transactionId)
+		fmt.Printf("- found a from-transaction index:%s accountNo:%s transactionId:%s\n", objectType, returnedAccountNo, transactionId)
 
 		// query transaction ammount
 		var transaction Transaction

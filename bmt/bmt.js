@@ -24,10 +24,13 @@ function invoke(options, fcn, args) {
             console.error("User not defined, or not enrolled - error")
         }
         channel = client.newChannel(options.channel_id)
-        let peerObj = client.newPeer(options.network_url);
+        let peerObj = client.newPeer(options.network_url)
         channel.addPeer(peerObj)
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
+        options.endorser_url.forEach((endorser) => {
+            targets.push(client.newPeer(endorser))
+        })
         return
     }).then(() => {
         tx_id = client.newTransactionID()

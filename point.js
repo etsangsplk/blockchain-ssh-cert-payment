@@ -85,7 +85,7 @@ function payPoint(call, callback) {
     let data = {
         result: false,
         errorMsg: '',
-        resultMessage
+        resultMessage: ''
     }
     bmt.invoke(options,
         'pay', [call.request.transactionId,

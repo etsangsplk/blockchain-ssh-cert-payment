@@ -8,7 +8,7 @@ package peer;
 
 service PeerMessagesService {
 	rpc saveCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
-	rpc saveCertificates(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
+	rpc saveCertificates(CustomerCertificateSetRequest) returns (CustomerCertificateReply) {}
 	rpc getCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc verifySignature(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc revokeCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}

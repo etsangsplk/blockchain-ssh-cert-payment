@@ -23,12 +23,17 @@ hbs.registerPartials(__dirname + '/views/partials')
 
 app.get('/', (req, res) => {
     res.render('home.hbs', {
-        pageTitle: 'Home Page',
-        name: 'Reo',
+        pageTitle: 'Transfer Point'
     })
 })
 
-app.get('/account/:accountNo', (req, res) => {
+app.get('/account', (req, res) => {
+    res.render('account.hbs', {
+        pageTitle: 'Account'
+    })
+})
+
+app.get('/info?account=:accountNo', (req, res) => {
     console.log(req.params)
     bmt.query(options,
         'queryAccount', [req.params.accountNo]

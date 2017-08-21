@@ -1,8 +1,15 @@
 {{> header}}
 
-        <p>Account No: {{accountNo}}<p>
-        <p>Account Type: {{accountType}}<p>
-        <p>Account Issuer: {{issuerAccount}}<p>
-        <p>Amount: {{accountAmount}}</p>
-    
+        <div style="width:55%; margin: 25px auto">
+                <form class="form-inline" id="queryForm">
+                        
+                        <div class="form-group">
+                                <div class="input-group">
+                                        <input type="text" class="form-control" name="account" placeholder="Account">
+                                </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">조 회</button>
+                </form>
+        </div> 
 {{> footer}}
