@@ -47,6 +47,12 @@ app.get('/', (req, res) => {
     })
 })
 
+app.get('/transfer', (req, res) => {
+    res.render('transfer.hbs', {
+        pageTitle: 'Transfer Point'
+    })
+})
+
 app.get('/account', (req, res) => {
     res.render('account.hbs', {
         pageTitle: 'Account'
@@ -54,9 +60,9 @@ app.get('/account', (req, res) => {
 })
 
 app.get('/info', (req, res) => {
-    console.log('query parameter: ', req.param['account'])
+    console.log('query parameter: ', req.query.account)
     bmt.query(options,
-        'queryAccount', [req.param['account']]
+        'queryAccount', [req.query.account]
     ).then((query_responses) => {
         console.log("returned from query ", query_responses)
 
@@ -67,9 +73,9 @@ app.get('/info', (req, res) => {
         } else {
             console.log("Parsed result: ", JSON.parse(query_responses))
             let result = JSON.parse(query_responses)
-            res.render('account.hbs', {
+            res.render('info.hbs', {
                 pageTitle: 'Account',
-                accountNo: req.params.accountNo,
+                accountNo: req.query.account,
                 accountType: result.accountType,
                 issuerAccount: result.issuerAccount,
                 accountAmount: result.amount,
@@ -80,7 +86,7 @@ app.get('/info', (req, res) => {
     })
 })
 
-app.post('/transfer', (req, res) => {
+app.post('/transferpoint', (req, res) => {
     let transactionId = uuidv4()
     bmt.invoke(options,
         'pay', [transactionId,
@@ -92,7 +98,7 @@ app.post('/transfer', (req, res) => {
         console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
-            res.redirect('/home')
+            res.redirect('/transfer')
         } else {
             console.error('Failed to order the transaction.')
         }

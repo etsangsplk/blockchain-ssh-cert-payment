@@ -7,6 +7,7 @@ const path = require('path')
 const util = require('util')
 const grpc = require('grpc')
 const bmt = require('./bmt/bmt')
+const uuidv4 = require('uuid/v4')
 const point_proto = grpc.load(PROTO_PATH).point
 
 let options = {
@@ -36,135 +37,48 @@ let options = {
     orderer_url: 'grpc://10.178.10.131:7050'
 }
 
+
+
+
 // test only
 /*
-function payPoint(call, callback) {
-    let channel = {}
-    let client = null
-    let targets = []
-    let tx_id = null
+function payPoint(fromAccount, toAccount, amount) {
     let data = {
-        result: true,
-        errorMsg: ''
+        result: false,
+        errorMsg: '',
+        resultMessage: ''
     }
-    Promise.resolve().then(() => {
-        console.log("Create a client and set the wallet location")
-        client = new hfc()
-        return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
-    }).then((wallet) => {
-        console.log("Set wallet path, and associate user ", options.user_id, " with application")
-        client.setStateStore(wallet)
-        return client.getUserContext(options.user_id, true)
-    }).then((user) => {
-        console.log("Check user is enrolled, and set a query URL in the network")
-        if (user === null) {
-            console.error("User not defined, or not enrolled - error")
-        }
-        channel = client.newChannel(options.channel_id)
-        let peerObj = client.newPeer(options.network_url)
-        channel.addPeer(peerObj)
-        channel.addOrderer(client.newOrderer(options.orderer_url))
-        targets.push(peerObj)
-        options.endorser_url.forEach((endorser) => {
-            targets.push(client.newPeer(endorser))
-        })
-        return
-    }).then(() => {
-        tx_id = client.newTransactionID()
-        console.log("Assigning transaction_id: ", tx_id._transaction_id)
-        let fcn = 'pay'
-        let args = [call.request.transactionId,
-            call.request.fromAccountNo,
-            call.request.toAccountNo,
-            '90000' // transactionAmount
+    bmt.invoke(options,
+        'pay', [uuidv4(),
+            fromAccount,
+            toAccount,
+            amount // transactionAmount
         ]
-        console.log('query fcn: ', fcn)
-        console.log('query args: ', args)
-
-        // send proposal to endorser
-        let request = {
-            targets: targets,
-            chaincodeId: options.chaincode_id,
-            fcn: fcn,
-            args: args,
-            chainId: options.channel_id,
-            txId: tx_id
-        }
-        callback(null, data)
-        return channel.sendTransactionProposal(request)
-    }).then((results) => {
-        let proposalResponses = results[0]
-        let proposal = results[1]
-        let header = results[2]
-        let isProposalGood = false
-        if (proposalResponses && proposalResponses[0].response &&
-            proposalResponses[0].response.status === 200) {
-            isProposalGood = true
-            console.log('Transaction proposal was good')
+    ).then((response) => {
+        console.log('create response: ', response)
+        if (response.status === 'SUCCESS') {
+            console.log('Successfully sent transaction to the orderer.', new Date())
+                // let resultMessage = new Buffer(response.payload).toString('ascii')
+                // data.result = true
+                // data.resultMessage = resultMessage
+                // callback(null, data)
         } else {
-            console.error('Transaction proposal was bad')
+            console.error('Failed to order the transaction.')
+                // data.result = false
+                // data.errorMsg = response
+                // callback(null, data)
         }
-        if (isProposalGood) {
-            console.log(util.format(
-                'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
-                proposalResponses[0].response.status, proposalResponses[0].response.message,
-                proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
-            let request = {
-                    proposalResponses: proposalResponses,
-                    proposal: proposal,
-                    header: header
-                }
-                // set the transaction listener and set a timeout of 30sec
-                // if the transaction did not get committed within the timeout period,
-                // fail the test
-            let transactionID = tx_id.getTransactionID()
-            let eventPromises = []
-            let eh = client.newEventHub()
-            eh.setPeerAddr(options.event_url)
-            eh.connect()
-
-            let txPromise = new Promise((resolve, reject) => {
-                let handle = setTimeout(() => {
-                    eh.disconnect()
-                    reject()
-                }, 30000)
-
-                eh.registerTxEvent(transactionID, (tx, code) => {
-                    clearTimeout(handle)
-                    eh.unregisterTxEvent(transactionID)
-                    eh.disconnect()
-
-                    if (code !== 'VALID') {
-                        console.error('The transaction was invalid, code = ' + code)
-                        reject()
-                    } else {
-                        console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
-                        resolve()
-                    }
-                })
-            })
-            eventPromises.push(txPromise)
-            let sendPromise = channel.sendTransaction(request)
-            return Promise.all([sendPromise].concat(eventPromises)).then((results) => {
-                console.log(' event promise all complete and testing complete')
-                let result = results[0]
-                result.payload = proposalResponses[0].response.payload
-                return result // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
-            }).catch((err) => {
-                console.error(
-                    'Failed to send transaction and get notifications within the timeout period.'
-                )
-                return 'Failed to send transaction and get notifications within the timeout period.'
-            })
-        } else {
-            console.error(
-                'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
-            )
-            return 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
-        }
+    }).catch((err) => {
+        // data.result = false
+        // data.errorMsg = err
+        // callback(null, data)
+        console.error("Caught Error", err)
     })
 }
 */
+
+
+
 
 // Create Account one by one
 function createAccount(call, callback) {
