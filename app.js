@@ -15,8 +15,6 @@ app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 let options = {
     wallet_path: path.join(__dirname, './creds'),
     user_id: 'PeerAdmin',
-    channel_id: 'pointchannel',
-    chaincode_id: 'chaincode_point',
     network_url: 'grpc://10.178.10.147:7051',
     endorser_url: ['grpc://10.178.10.162:7051',
         'grpc://10.178.10.177:7051',
@@ -39,11 +37,25 @@ let options = {
     orderer_url: 'grpc://10.178.10.131:7050'
 }
 
+let certOptions = Object.create(options)
+certOptions.channel_id = 'certificatechannel'
+certOptions.chaincode_id = 'chaincode_certificate'
+
+let pointOptions = Object.create(options)
+pointOptions.channel_id = 'pointchannel'
+pointOptions.chaincode_id = 'chaincode_point'
+
 hbs.registerPartials(__dirname + '/views/partials')
 
 app.get('/', (req, res) => {
     res.render('home.hbs', {
         pageTitle: 'Transfer Point'
+    })
+})
+
+app.get('/cert', (req, res) => {
+    res.render('cert.hbs', {
+        pageTitle: '인증정보 조회'
     })
 })
 
@@ -59,9 +71,32 @@ app.get('/account', (req, res) => {
     })
 })
 
+app.get('/certinfo', (req, res) => {
+    console.log('query parameter: ', req.query.certNo)
+    bmt.query(certOptions,
+        'query', [req.query.certNo]
+    ).then((query_responses) => {
+        console.log("returned from query ", query_responses)
+
+        if (query_responses[0] instanceof Error) {
+            console.error("error from query = ", query_responses[0])
+        } else if (!query_responses.length) {
+            console.log("No payloads were returned from query")
+        } else {
+            console.log("Parsed result: ", JSON.parse(query_responses))
+            let result = JSON.parse(query_responses)
+            res.render('certinfo.hbs', {
+                pageTitle: '인증 정보'
+            })
+        }
+    }).catch((err) => {
+        console.error("Caught Error", err)
+    })
+})
+
 app.get('/info', (req, res) => {
     console.log('query parameter: ', req.query.account)
-    bmt.query(options,
+    bmt.query(pointOptions,
         'queryAccount', [req.query.account]
     ).then((query_responses) => {
         console.log("returned from query ", query_responses)
