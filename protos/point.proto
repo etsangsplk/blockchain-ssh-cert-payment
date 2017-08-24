@@ -16,9 +16,10 @@ service BmtPointService {
 	rpc createAccounts(AccountSetRequest) returns (PointReply) {}
 	
 	// payPoint
-	// requestArgs: transactionDate(currentDate), fromAccountNo, toAccountNo, transactionAmount
+	// requestArgs: transactionId, fromAccountNo, toAccountNo, transactionAmount
 	// replyData: result, errorMsg, accountAmount
 	rpc payPoint(PointRequest) returns (PointReply) {}
+	rpc payPoints(PointSetRequest) returns (PointReply) {}
 }
 
 message AccountSetRequest {
@@ -34,6 +35,10 @@ message PointRequest {
 	string fromAccountNo = 6;
 	string toAccountNo = 7;
 	string transactionAmount = 8;
+}
+
+message PointSetRequest {
+	string pointSets = 1;
 }
 
 message PointReply {

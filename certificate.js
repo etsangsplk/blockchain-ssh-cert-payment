@@ -39,45 +39,6 @@ let options = {
     orderer_url: 'grpc://10.178.10.131:7050'
 }
 
-// test only
-// function saveCertificates(call, callback) {
-//     let channel = {}
-//     let client = null
-//     let targets = []
-//     let tx_id = null
-//     let data = {
-//         result: true,
-//         errorMsg: ''
-//     }
-//     Promise.resolve().then(() => {
-//         console.log("Create a client and set the wallet location")
-//         client = new hfc()
-//         return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
-//     }).then((wallet) => {
-//         console.log("Set wallet path, and associate user ", options.user_id, " with application")
-//         client.setStateStore(wallet)
-//         return client.getUserContext(options.user_id, true)
-//     }).then((user) => {
-//         console.log("Check user is enrolled, and set a query URL in the network")
-//         if (user === null) {
-//             console.error("User not defined, or not enrolled - error")
-//             data.result = false
-//             data.errorMsg = 'User not defined, or not enrolled - error'
-//         }
-//         channel = client.newChannel(options.channel_id)
-//         let peerObj = client.newPeer(options.network_url)
-//         channel.addPeer(peerObj)
-//         channel.addOrderer(client.newOrderer(options.orderer_url))
-//         targets.push(peerObj)
-//         callback(null, data)
-//         return
-//     }).catch((err) => {
-//         data.result = false
-//         data.errorMsg = err
-//         callback(null, data)
-//         console.error("Caught Error", err)
-//     })
-// }
 
 function saveCertificate(call, callback) {
     let data = {
@@ -94,7 +55,7 @@ function saveCertificate(call, callback) {
             call.request.certificate // FileCertificate
         ]
     ).then((response) => {
-        console.log('create response: ', response)
+        // console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true
@@ -115,155 +76,13 @@ function saveCertificate(call, callback) {
 
 function saveCertificates(call, callback) {
     let data = {
-            result: false,
-            errorMsg: ''
-        }
-        /*
-            let channel = {}
-            let client = null
-            let targets = []
-            let tx_id = null
-            let clientPromise = new Promise((resolve, reject) => {
-                if (client != null) {
-                    reject('test purpose only')
-                } else {
-                    resolve()
-                }
-            })
-            clientPromise.then(() => {
-                console.log("Create a client and set the wallet location")
-                client = new hfc()
-                return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
-            }).then((wallet) => {
-                console.log("Set wallet path, and associate user ", options.user_id, " with application")
-                client.setStateStore(wallet)
-                return client.getUserContext(options.user_id, true)
-            }).then((user) => {
-                console.log("Check user is enrolled, and set a query URL in the network")
-                if (user === null) {
-                    console.error("User not defined, or not enrolled - error")
-                }
-                channel = client.newChannel(options.channel_id)
-                let peerObj = client.newPeer(options.network_url)
-                channel.addPeer(peerObj)
-                channel.addOrderer(client.newOrderer(options.orderer_url))
-                targets.push(peerObj)
-                options.endorser_url.forEach((endorser) => {
-                    targets.push(client.newPeer(endorser))
-                })
-                return
-            }).then(() => {
-                tx_id = client.newTransactionID()
-                console.log("Assigning transaction_id: ", tx_id._transaction_id)
-                let fcn = 'createCertificates'
-                let args = [call.request.certificateSets]
-                console.log('query fcn: ', fcn)
-                console.log('query args: ', args)
-
-                // send proposal to endorser
-                let request = {
-                    targets: targets,
-                    chaincodeId: options.chaincode_id,
-                    fcn: fcn,
-                    args: args,
-                    chainId: options.channel_id,
-                    txId: tx_id
-                }
-
-                return channel.sendTransactionProposal(request)
-            }).then((results) => {
-                let proposalResponses = results[0]
-                let proposal = results[1]
-                let header = results[2]
-                let isProposalGood = false
-                if (proposalResponses && proposalResponses[0].response &&
-                    proposalResponses[0].response.status === 200) {
-                    isProposalGood = true
-                    console.log('Transaction proposal was good')
-                } else {
-                    console.error('Transaction proposal was bad')
-                }
-                if (isProposalGood) {
-                    console.log(util.format(
-                        'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
-                        proposalResponses[0].response.status, proposalResponses[0].response.message,
-                        proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
-                    let request = {
-                            proposalResponses: proposalResponses,
-                            proposal: proposal,
-                            header: header
-                        }
-                        // set the transaction listener and set a timeout of 30sec
-                        // if the transaction did not get committed within the timeout period,
-                        // fail the test
-                    let transactionID = tx_id.getTransactionID()
-                    let eventPromises = []
-                    let eh = client.newEventHub()
-                    eh.setPeerAddr(options.event_url)
-                    eh.connect()
-
-                    let txPromise = new Promise((resolve, reject) => {
-                        let handle = setTimeout(() => {
-                            eh.disconnect()
-                            reject()
-                        }, 30000)
-
-                        eh.registerTxEvent(transactionID, (tx, code) => {
-                            clearTimeout(handle)
-                            eh.unregisterTxEvent(transactionID)
-                            eh.disconnect()
-
-                            if (code !== 'VALID') {
-                                console.error('The transaction was invalid, code = ' + code)
-                                reject()
-                            } else {
-                                console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
-                                resolve()
-                            }
-                        })
-                    })
-                    eventPromises.push(txPromise)
-                    let sendPromise = channel.sendTransaction(request)
-                    return Promise.all([sendPromise].concat(eventPromises)).then((results) => {
-                        console.log(' event promise all complete and testing complete')
-                        let result = results[0]
-                        result.payload = proposalResponses[0].response.payload
-                        return result // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
-                    }).catch((err) => {
-                        console.error(
-                            'Failed to send transaction and get notifications within the timeout period.'
-                        )
-                        return 'Failed to send transaction and get notifications within the timeout period.'
-                    })
-                } else {
-                    console.error(
-                        'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
-                    )
-                    return 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
-                }
-            }).then((response) => {
-                console.log("invoke response: ", response)
-                if (response.status === 'SUCCESS') {
-                    console.log('Successfully sent transaction to the orderer.')
-                    data.result = true
-                    callback(null, data)
-                } else {
-                    console.error('Failed to order the transaction.')
-                    data.result = false
-                    data.errorMsg = response
-                    callback(null, data)
-                }
-            }).catch((err) => {
-                data.result = false
-                data.errorMsg = err
-                callback(null, data)
-                console.error("Caught Error :", err)
-            })
-        */
+        result: false,
+        errorMsg: ''
+    }
     bmt.invoke(options,
         'createCertificates', [call.request.certificateSets]
     ).then((response) => {
-        console.log("invoke response: ", response)
+        // console.log("invoke response: ", response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true
@@ -293,7 +112,7 @@ function getCertificate(call, callback) {
     bmt.query(options,
         'query', [call.request.serialNo]
     ).then((query_responses) => {
-        console.log("returned from query")
+        // console.log("returned from query")
 
         if (query_responses[0] instanceof Error) {
             data.result = false
@@ -304,9 +123,9 @@ function getCertificate(call, callback) {
             data.result = false
             data.errorMsg = "No payloads were returned from query"
             callback(null, data)
-            console.log("No payloads were returned from query")
+                // console.log("No payloads were returned from query")
         } else {
-            console.log(JSON.parse(query_responses))
+            // console.log(JSON.parse(query_responses))
             let response = JSON.parse(query_responses)
             data.result = true
             data.certificate = response.fileCertificate
@@ -332,11 +151,11 @@ function verifySignature(call, callback) {
             call.request.currentDate
         ]
     ).then((query_responses) => {
-        console.log("returned from query")
+        // console.log("returned from query")
         let result = new Buffer(query_responses[0]).toString('ascii')
-        console.log('query response: ', new Buffer(query_responses[0]).toString('ascii'))
+            // console.log('query response: ', new Buffer(query_responses[0]).toString('ascii'))
         if (result === 'Y') {
-            console.log('Successfully verify the signature')
+            // console.log('Successfully verify the signature')
             data.result = true
             callback(null, data)
         } else {
@@ -364,7 +183,7 @@ function revokeCertificate(call, callback) {
         ]
     ).then((response) => {
         if (response.status === 'SUCCESS') {
-            console.log('Successfully sent transaction to the orderer.')
+            // console.log('Successfully sent transaction to the orderer.')
             data.result = true
             callback(null, data)
         } else {

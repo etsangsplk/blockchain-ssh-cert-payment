@@ -37,49 +37,6 @@ let options = {
     orderer_url: 'grpc://10.178.10.131:7050'
 }
 
-
-
-
-// test only
-/*
-function payPoint(fromAccount, toAccount, amount) {
-    let data = {
-        result: false,
-        errorMsg: '',
-        resultMessage: ''
-    }
-    bmt.invoke(options,
-        'pay', [uuidv4(),
-            fromAccount,
-            toAccount,
-            amount // transactionAmount
-        ]
-    ).then((response) => {
-        console.log('create response: ', response)
-        if (response.status === 'SUCCESS') {
-            console.log('Successfully sent transaction to the orderer.', new Date())
-                // let resultMessage = new Buffer(response.payload).toString('ascii')
-                // data.result = true
-                // data.resultMessage = resultMessage
-                // callback(null, data)
-        } else {
-            console.error('Failed to order the transaction.')
-                // data.result = false
-                // data.errorMsg = response
-                // callback(null, data)
-        }
-    }).catch((err) => {
-        // data.result = false
-        // data.errorMsg = err
-        // callback(null, data)
-        console.error("Caught Error", err)
-    })
-}
-*/
-
-
-
-
 // Create Account one by one
 function createAccount(call, callback) {
     let data = {
@@ -93,7 +50,7 @@ function createAccount(call, callback) {
             call.request.accountAmount
         ]
     ).then((response) => {
-        console.log('create response: ', response)
+        // console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true
@@ -121,7 +78,7 @@ function createAccounts(call, callback) {
     bmt.invoke(options,
         'createAccounts', [call.request.accountSets]
     ).then((response) => {
-        console.log('create response: ', response)
+        // console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true
@@ -153,7 +110,7 @@ function payPoint(call, callback) {
             '90000' // transactionAmount
         ]
     ).then((response) => {
-        console.log('create response: ', response)
+        // console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             let resultMessage = new Buffer(response.payload).toString('ascii')
@@ -174,6 +131,35 @@ function payPoint(call, callback) {
     })
 }
 
+function payPoints(call, callback) {
+    let data = {
+        result: false,
+        errorMsg: '',
+        resultMessage: ''
+    }
+    bmt.invoke(options,
+        'payTrxs', [call.request.pointSets]
+    ).then((response) => {
+        // console.log('create response: ', response)
+        if (response.status === 'SUCCESS') {
+            console.log('Successfully sent transaction to the orderer.')
+            let resultMessage = new Buffer(response.payload).toString('ascii')
+            data.result = true
+            data.resultMessage = resultMessage
+            callback(null, data)
+        } else {
+            console.error('Failed to order the transaction.')
+            data.result = false
+            data.errorMsg = response
+            callback(null, data)
+        }
+    }).catch((err) => {
+        data.result = false
+        data.errorMsg = err
+        callback(null, data)
+        console.error("Caught Error", err)
+    })
+}
 
 
 function getServer() {
