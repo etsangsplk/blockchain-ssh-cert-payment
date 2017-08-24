@@ -48,14 +48,8 @@ pointOptions.chaincode_id = 'chaincode_point'
 hbs.registerPartials(__dirname + '/views/partials')
 
 app.get('/', (req, res) => {
-    res.render('transfer.hbs', {
-        pageTitle: 'Transfer Point'
-    })
-})
-
-app.get('/revoke', (req, res) => {
-    res.render('revoke.hbs', {
-        pageTitle: '인증서 폐기'
+    res.render('cert.hbs', {
+        pageTitle: '인증정보 조회'
     })
 })
 
@@ -91,7 +85,7 @@ app.get('/cert', (req, res) => {
 
 app.get('/transfer', (req, res) => {
     res.render('transfer.hbs', {
-        pageTitle: 'Transfer Point'
+        pageTitle: '지급 결제'
     })
 })
 
