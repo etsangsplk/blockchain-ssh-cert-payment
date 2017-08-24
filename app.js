@@ -48,15 +48,45 @@ pointOptions.chaincode_id = 'chaincode_point'
 hbs.registerPartials(__dirname + '/views/partials')
 
 app.get('/', (req, res) => {
-    res.render('home.hbs', {
+    res.render('transfer.hbs', {
         pageTitle: 'Transfer Point'
     })
 })
 
-app.get('/cert', (req, res) => {
-    res.render('cert.hbs', {
-        pageTitle: '인증정보 조회'
+app.get('/revoke', (req, res) => {
+    res.render('revoke.hbs', {
+        pageTitle: '인증서 폐기'
     })
+})
+
+app.get('/cert', (req, res) => {
+    if (req.query.certNo === undefined) {
+        res.render('cert.hbs', {
+            pageTitle: '인증정보 조회'
+        })
+    } else {
+        console.log('query parameter: ', req.query.certNo)
+        bmt.query(certOptions,
+            'query', [req.query.certNo]
+        ).then((query_responses) => {
+            console.log("returned from query ", query_responses)
+
+            if (query_responses[0] instanceof Error) {
+                console.error("error from query = ", query_responses[0])
+            } else if (!query_responses.length) {
+                console.log("No payloads were returned from query")
+            } else {
+                console.log("Parsed result: ", JSON.parse(query_responses))
+                let result = JSON.parse(query_responses)
+                res.render('cert.hbs', {
+                    pageTitle: '인증 정보',
+                    certNo: req.query.certNo
+                })
+            }
+        }).catch((err) => {
+            console.error("Caught Error", err)
+        })
+    }
 })
 
 app.get('/transfer', (req, res) => {
@@ -66,9 +96,38 @@ app.get('/transfer', (req, res) => {
 })
 
 app.get('/account', (req, res) => {
-    res.render('account.hbs', {
-        pageTitle: 'Account'
-    })
+    if (req.query.account === undefined) {
+        res.render('account.hbs', {
+            pageTitle: '계좌 조회'
+        })
+    } else {
+        console.log('query parameter: ', req.query.account)
+        bmt.query(pointOptions,
+            'queryAccount', [req.query.account]
+        ).then((query_responses) => {
+            console.log("returned from query ", query_responses)
+
+            if (query_responses[0] instanceof Error) {
+                console.error("error from query = ", query_responses[0])
+            } else if (!query_responses.length) {
+                console.log("No payloads were returned from query")
+            } else {
+                console.log("Parsed result: ", JSON.parse(query_responses))
+                let result = JSON.parse(query_responses)
+                res.render('acount.hbs', {
+                    pageTitle: '계좌 조회',
+                    accountNo: req.query.account,
+                    accountType: result.accountType,
+                    issuerAccount: result.issuerAccount,
+                    accountAmount: result.amount,
+                })
+            }
+        }).catch((err) => {
+            console.error("Caught Error", err)
+        })
+
+    }
+
 })
 
 app.get('/certinfo', (req, res) => {
@@ -94,7 +153,8 @@ app.get('/certinfo', (req, res) => {
     })
 })
 
-app.get('/info', (req, res) => {
+/*
+app.get('/account', (req, res) => {
     console.log('query parameter: ', req.query.account)
     bmt.query(pointOptions,
         'queryAccount', [req.query.account]
@@ -120,6 +180,7 @@ app.get('/info', (req, res) => {
         console.error("Caught Error", err)
     })
 })
+*/
 
 app.post('/transferpoint', (req, res) => {
     let transactionId = uuidv4()

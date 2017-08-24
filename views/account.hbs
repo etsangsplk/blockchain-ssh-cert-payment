@@ -1,7 +1,7 @@
 {{> header}}
 
         <div style="width:55%; margin: 25px auto">
-                <form class="form-inline" action="/info" method="GET">
+                <form class="form-inline" action="/account" method="GET">
                         <div class="form-group">
                                 <div class="input-group">
                                         <input type="text" class="form-control" name="account" placeholder="Account">
@@ -9,5 +9,12 @@
                         </div>
                         <button type="submit" class="btn btn-primary">조 회</button>
                 </form>
+                <br>
+                {{#if accountNo}}
+                        <p>Account No: {{accountNo}}<p>
+                        <p>Account Type: {{accountType}}<p>
+                        <p>Account Issuer: {{issuerAccount}}<p>
+                        <p>Amount: {{accountAmount}}</p>
+                {{/if}}
         </div> 
 {{> footer}}
