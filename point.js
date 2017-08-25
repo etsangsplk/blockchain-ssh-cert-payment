@@ -140,7 +140,7 @@ function payPoints(call, callback) {
     bmt.invoke(options,
         'payTrxs', [call.request.pointSets]
     ).then((response) => {
-        // console.log('create response: ', response)
+        console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             let resultMessage = new Buffer(response.payload).toString('ascii')
@@ -167,7 +167,8 @@ function getServer() {
     server.addService(point_proto.BmtPointService.service, {
         createAccount: createAccount,
         createAccounts: createAccounts,
-        payPoint: payPoint
+        payPoint: payPoint,
+        payPoints: payPoints
     })
     return server;
 }

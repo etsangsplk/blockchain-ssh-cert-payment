@@ -17,8 +17,8 @@ let options = {
     user_id: 'PeerAdmin',
     channel_id: 'certificatechannel',
     chaincode_id: 'chaincode_certificate',
-    network_url: 'grpc://10.178.10.162:7051',
-    endorser_url: ['grpc://10.178.10.147:7051',
+    network_url: 'grpc://10.178.10.147:7051',
+    endorser_url: ['grpc://10.178.10.162:7051',
         'grpc://10.178.10.177:7051',
         'grpc://10.178.10.181:7051',
         'grpc://10.178.10.183:7051',
@@ -35,7 +35,7 @@ let options = {
         'grpc://10.178.195.149:7051',
         'grpc://10.178.195.150:7051'
     ],
-    event_url: 'grpc://10.178.10.162:7053',
+    event_url: 'grpc://10.178.10.147:7053',
     orderer_url: 'grpc://10.178.10.131:7050'
 }
 

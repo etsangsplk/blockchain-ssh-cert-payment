@@ -11,15 +11,15 @@ function invoke(options, fcn, args) {
     let targets = []
     let tx_id = null
     return Promise.resolve().then(() => {
-        // console.log("Create a client and set the wallet location")
+        console.log("Create a client and set the wallet location")
         client = new hfc()
         return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
     }).then((wallet) => {
-        // console.log("Set wallet path, and associate user ", options.user_id, " with application")
+        console.log("Set wallet path, and associate user ", options.user_id, " with application")
         client.setStateStore(wallet)
         return client.getUserContext(options.user_id, true)
     }).then((user) => {
-        // console.log("Check user is enrolled, and set a query URL in the network")
+        console.log("Check user is enrolled, and set a query URL in the network")
         if (user === null) {
             console.error("User not defined, or not enrolled - error")
         }
@@ -34,9 +34,9 @@ function invoke(options, fcn, args) {
         return
     }).then(() => {
         tx_id = client.newTransactionID()
-            // console.log("Assigning transaction_id: ", tx_id._transaction_id)
-            // console.log('query fcn: ', fcn)
-            // console.log('query args: ', args)
+        console.log("Assigning transaction_id: ", tx_id._transaction_id)
+        console.log('query fcn: ', fcn)
+        console.log('query args: ', args)
 
         // send proposal to endorser
         let request = {
@@ -57,15 +57,15 @@ function invoke(options, fcn, args) {
         if (proposalResponses && proposalResponses[0].response &&
             proposalResponses[0].response.status === 200) {
             isProposalGood = true
-                // console.log('Transaction proposal was good')
+            console.log('Transaction proposal was good')
         } else {
             console.error('Transaction proposal was bad')
         }
         if (isProposalGood) {
-            // console.log(util.format(
-            //     'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
-            //     proposalResponses[0].response.status, proposalResponses[0].response.message,
-            //     proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
+            console.log(util.format(
+                'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
+                proposalResponses[0].response.status, proposalResponses[0].response.message,
+                proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
             let request = {
                     proposalResponses: proposalResponses,
                     proposal: proposal,
@@ -95,7 +95,7 @@ function invoke(options, fcn, args) {
                         console.error('The transaction was invalid, code = ' + code)
                         reject()
                     } else {
-                        // console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
+                        console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
                         resolve()
                     }
                 })
@@ -103,7 +103,7 @@ function invoke(options, fcn, args) {
             eventPromises.push(txPromise)
             let sendPromise = channel.sendTransaction(request)
             return Promise.all([sendPromise].concat(eventPromises)).then((results) => {
-                // console.log(' event promise all complete and testing complete')
+                console.log(' event promise all complete and testing complete')
                 let result = results[0]
                 result.payload = proposalResponses[0].response.payload
                 return result // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
