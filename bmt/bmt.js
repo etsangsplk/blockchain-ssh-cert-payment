@@ -10,6 +10,7 @@ function invoke(options, fcn, args) {
     let client = null
     let targets = []
     let tx_id = null
+
     return Promise.resolve().then(() => {
         console.log("Create a client and set the wallet location")
         client = new hfc()
@@ -28,9 +29,18 @@ function invoke(options, fcn, args) {
         channel.addPeer(peerObj)
         channel.addOrderer(client.newOrderer(options.orderer_url))
         targets.push(peerObj)
-        options.endorser_url.forEach((endorser) => {
-            targets.push(client.newPeer(endorser))
-        })
+        let i = null
+        let endorser = ''
+        let ranNum = null
+        for (i = 0; i < options.endorser_url.length / 3; i++) {
+            ranNum = Math.floor(Math.random() * (endorser_url.length - i))
+            endorser = options.endorser_url[ranNum]
+            targets.push(endorser)
+            options.endorser_url.splice(ranNum, 1)
+        }
+        // options.endorser_url.forEach((endorser) => {
+        //     targets.push(client.newPeer(endorser))
+        // })
         return
     }).then(() => {
         tx_id = client.newTransactionID()
