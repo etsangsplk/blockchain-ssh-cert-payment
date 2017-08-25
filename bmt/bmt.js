@@ -10,20 +10,20 @@ function invoke(options, fcn, args) {
     let client = null
     let targets = []
     let tx_id = null
-
+    console.log('Calling chaincode..')
     return Promise.resolve().then(() => {
-        console.log("Create a client and set the wallet location")
+        // console.log("Create a client and set the wallet location")
         client = new hfc()
         return hfc.newDefaultKeyValueStore({ path: options.wallet_path })
     }).then((wallet) => {
-        console.log("Set wallet path, and associate user ", options.user_id, " with application")
+        // console.log("Set wallet path, and associate user ", options.user_id, " with application")
         client.setStateStore(wallet)
         return client.getUserContext(options.user_id, true)
     }).then((user) => {
-        console.log("Check user is enrolled, and set a query URL in the network")
-        if (user === null) {
-            console.error("User not defined, or not enrolled - error")
-        }
+        // console.log("Check user is enrolled, and set a query URL in the network")
+        // if (user === null) {
+        //     console.error("User not defined, or not enrolled - error")
+        // }
         channel = client.newChannel(options.channel_id)
         let peerObj = client.newPeer(options.network_url)
         channel.addPeer(peerObj)
@@ -33,7 +33,7 @@ function invoke(options, fcn, args) {
         let endorser = ''
         let ranNum = null
         for (i = 0; i < options.endorser_url.length / 3; i++) {
-            ranNum = Math.floor(Math.random() * (endorser_url.length - i))
+            ranNum = Math.floor(Math.random() * (options.endorser_url.length - i))
             endorser = options.endorser_url[ranNum]
             targets.push(endorser)
             options.endorser_url.splice(ranNum, 1)
@@ -44,9 +44,9 @@ function invoke(options, fcn, args) {
         return
     }).then(() => {
         tx_id = client.newTransactionID()
-        console.log("Assigning transaction_id: ", tx_id._transaction_id)
-        console.log('query fcn: ', fcn)
-        console.log('query args: ', args)
+            // console.log("Assigning transaction_id: ", tx_id._transaction_id)
+            // console.log('query fcn: ', fcn)
+            // console.log('query args: ', args)
 
         // send proposal to endorser
         let request = {
@@ -72,10 +72,10 @@ function invoke(options, fcn, args) {
             console.error('Transaction proposal was bad')
         }
         if (isProposalGood) {
-            console.log(util.format(
-                'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
-                proposalResponses[0].response.status, proposalResponses[0].response.message,
-                proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
+            // console.log(util.format(
+            //     'Successfully sent Proposal and received ProposalResponse: Status - %s, message - "%s", metadata - "%s", endorsement signature: %s',
+            //     proposalResponses[0].response.status, proposalResponses[0].response.message,
+            //     proposalResponses[0].response.payload, proposalResponses[0].endorsement.signature))
             let request = {
                     proposalResponses: proposalResponses,
                     proposal: proposal,
@@ -105,7 +105,7 @@ function invoke(options, fcn, args) {
                         console.error('The transaction was invalid, code = ' + code)
                         reject()
                     } else {
-                        console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
+                        // console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
                         resolve()
                     }
                 })
@@ -135,6 +135,7 @@ function invoke(options, fcn, args) {
 function query(options, fcn, args) {
     let channel = {}
     let client = null
+    console.log('Calling chaincode..')
     return Promise.resolve().then(() => {
         // console.log("Create a client and set the wallet location")
         client = new hfc()

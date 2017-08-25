@@ -39,7 +39,7 @@ let options = {
     orderer_url: 'grpc://10.178.10.131:7050'
 }
 
-let ranNum = Math.floor(Math.random() * endorser_url.length)
+let ranNum = Math.floor(Math.random() * options.endorser_url.length)
     // Set network url randomly from endorsers (default port: 7051)
 options.network_url = options.endorser_url[ranNum]
     // Remove networkurl from endorser url
@@ -150,7 +150,7 @@ function payPoints(call, callback) {
     bmt.invoke(options,
         'payTrxs', [call.request.pointSets]
     ).then((response) => {
-        console.log('create response: ', response)
+        // console.log('create response: ', response)
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             let resultMessage = new Buffer(response.payload).toString('ascii')
@@ -184,5 +184,5 @@ function getServer() {
 }
 
 let routeServer = getServer()
-routeServer.bind('localhost:60302', grpc.ServerCredentials.createInsecure())
+routeServer.bind('localhost:62001', grpc.ServerCredentials.createInsecure())
 routeServer.start()
