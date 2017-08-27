@@ -36,7 +36,7 @@ let options = {
             'grpc://10.178.195.150:7051'
         ],
         event_url: '',
-        orderer_url: 'grpc://10.178.10.131:7050'
+        orderer_url: 'grpc://10.178.10.189:7050'
     }
     //grpc://10.178.10.189:7051
 let ranNum = Math.floor(Math.random() * options.endorser_url.length)
@@ -86,15 +86,14 @@ app.get('/cert', (req, res) => {
                 let result = JSON.parse(query_responses)
                 res.render('cert.hbs', {
                     pageTitle: '인증 정보',
-                    serialNo: req.query.serialNo,
-                    issuer: req.query.issuer,
-                    residentNo: req.query.residentNo,
-                    publicKey: req.query.publicKey,
-                    startDate: req.query.startDate,
-                    endDate: req.query.endDate,
-                    certificate: fileCertificate,
-                    status: req.qeury.status
-
+                    serialNo: result.serialNo,
+                    issuer: result.issuer,
+                    residentNo: result.residentNo,
+                    publicKey: result.publicKey,
+                    startDate: result.startDate,
+                    endDate: result.endDate,
+                    certificate: result.fileCertificate,
+                    status: result.status
                 })
             }
         }).catch((err) => {
@@ -128,7 +127,7 @@ app.get('/account', (req, res) => {
             } else {
                 console.log("Parsed result: ", JSON.parse(query_responses))
                 let result = JSON.parse(query_responses)
-                res.render('acount.hbs', {
+                res.render('account.hbs', {
                     pageTitle: '계좌 조회',
                     accountNo: req.query.account,
                     accountType: result.accountType,
@@ -198,7 +197,7 @@ app.get('/account', (req, res) => {
 
 app.post('/transferpoint', (req, res) => {
     let transactionId = uuidv4()
-    bmt.invoke(options,
+    bmt.invoke(pointOptions,
         'pay', [transactionId,
             req.body.fromAccount,
             req.body.toAccount,
