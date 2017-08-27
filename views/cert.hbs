@@ -1,28 +1,74 @@
 {{> header}}
 
         <div style="width:55%; margin: 25px auto">
-        {{#each this}}
-                <div class="row"></div>
-        {{/each}}
             <form class="form-inline" action="/cert" method="GET">
-                    <div class="form-group">
-                            <div class="input-group">
-                                    <input type="text" class="form-control" name="certNo" placeholder="인증서 일련번호">
-                            </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">조 회</button>
+                <div class="form-group">
+                        <label for="sel1">블록체인 노드 타입</label>
+                        <select class="form-control" name="selectOption">
+                                <option value="은행">은행</option>
+                                <option value="은행연합회">은행연합회</option>
+                        </select>
+                </div>
+                <div class="form-group">
+                        <div class="input-group">
+                                <input type="text" class="form-control" name="serialNo" placeholder="인증서 일련번호">
+                        </div>
+                </div>
+                <button type="submit" class="btn btn-primary">조 회</button>
             </form>
             <br>
-            {{!-- {{#if serialNo}} --}}
+            {{#if serialNo}}
                 <p>Certification No: {{serialNo}}</p>
-                {{!-- <p>인증서 상태: {{status}}</p>
+                <p>인증서 상태: {{status}}</p>
                 <p>발행기관 코드: {{issuer}}</p>
                 <p>주민번호(Hash): {{residentNo}}</p>
-                <p>고객 공개키: {{publicKey}}</p>
+                <p>고객 공개키:</p>
+                <pre>{{publicKey}}</pre>
                 <p>발급 일자: {{startDate}}</p>
                 <p>유효 일자: {{endDate}}</p>
-                <p>인증서: {{certificate}}</p>
-                <p>인증서 상태: {{status}}</p> --}}
-            {{!-- {{/if}} --}}
+                <p>인증서 상태: {{status}}</p>
+                <p>인증서:</p>
+                <pre id="cert-area">{{certificate}}</pre>
+                <button type="button" class="btn btn-primary" value="save" id="save"> 인증서 다운로드</button> 
+            {{/if}}
         </div> 
+
+        <script>
+
+        function saveTextAsFile()
+        {
+            var textToWrite = document.getElementById('cert-area').innerText;
+            var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
+            var fileNameToSaveAs = "bmt-customer-cert.pem";
+        
+            var downloadLink = document.createElement("a");
+            downloadLink.download = fileNameToSaveAs;
+            downloadLink.innerHTML = "Download File";
+            if (window.webkitURL != null)
+            {
+                // Chrome allows the link to be clicked
+                // without actually adding it to the DOM.
+                downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+            }
+            else
+            {
+                // Firefox requires the link to be added to the DOM
+                // before it can be clicked.
+                downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+                downloadLink.onclick = function(){
+                	document.body.removeChild(downloadLink);
+                };
+                downloadLink.style.display = "none";
+                document.body.appendChild(downloadLink);
+            }
+        
+            downloadLink.click();
+        }
+    
+        var button = document.getElementById('save');
+        button.addEventListener('click', saveTextAsFile);
+
+
+
+        </script>
 {{> footer}}

@@ -13,32 +13,34 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 
 let options = {
-        wallet_path: path.join(__dirname, './creds'),
-        user_id: 'PeerAdmin',
-        network_url: '',
-        endorser_url: [
-            'grpc://10.178.10.147:7051',
-            'grpc://10.178.10.162:7051',
-            'grpc://10.178.10.177:7051',
-            'grpc://10.178.10.181:7051',
-            'grpc://10.178.10.183:7051',
-            'grpc://10.178.10.184:7051',
-            'grpc://10.178.10.187:7051',
-            'grpc://10.178.10.185:7051',
-            'grpc://10.178.195.190:7051',
-            'grpc://10.178.195.131:7051',
-            'grpc://10.178.195.134:7051',
-            'grpc://10.178.195.141:7051',
-            'grpc://10.178.195.142:7051',
-            'grpc://10.178.195.239:7051',
-            'grpc://10.178.195.148:7051',
-            'grpc://10.178.195.149:7051',
-            'grpc://10.178.195.150:7051'
-        ],
-        event_url: '',
-        orderer_url: 'grpc://10.178.10.189:7050'
-    }
-    //grpc://10.178.10.189:7051
+    wallet_path: path.join(__dirname, './creds'),
+    user_id: 'PeerAdmin',
+    network_url: '',
+    endorser_url: [
+        'grpc://10.178.10.147:7051',
+        'grpc://10.178.10.162:7051',
+        'grpc://10.178.10.177:7051',
+        'grpc://10.178.10.181:7051',
+        'grpc://10.178.10.183:7051',
+        'grpc://10.178.10.184:7051',
+        'grpc://10.178.10.187:7051',
+        'grpc://10.178.10.185:7051',
+        'grpc://10.178.195.190:7051',
+        'grpc://10.178.195.131:7051',
+        'grpc://10.178.195.134:7051',
+        'grpc://10.178.195.141:7051',
+        'grpc://10.178.195.142:7051',
+        'grpc://10.178.195.239:7051',
+        'grpc://10.178.195.148:7051',
+        'grpc://10.178.195.149:7051',
+        'grpc://10.178.195.150:7051'
+    ],
+    event_url: '',
+    orderer_url: 'grpc://10.178.10.189:7050'
+}
+
+
+//grpc://10.178.10.189:7051
 let ranNum = Math.floor(Math.random() * options.endorser_url.length)
     // Set network url randomly from endorsers (default port: 7051)
     // options.network_url = 'grpc://10.178.10.189:7051' // 은행연합회 노드
@@ -65,22 +67,30 @@ app.get('/', (req, res) => {
 })
 
 app.get('/cert', (req, res) => {
-    if (req.query.certNo === undefined) {
+    if (req.query.serialNo === undefined) {
         res.render('cert.hbs', {
-            pageTitle: '인증정보 조회',
-            endorserList: options.endorser_url
+            pageTitle: '인증정보 조회'
         })
     } else {
-        console.log('query parameter: ', req.query.certNo)
+        console.log('query parameter: ', req.query)
+        if (req.query.selectOption === '은행연합회') {
+            certOptions.network_url = 'grpc://10.178.10.189:7051'
+        } else {
+            certOptions.network_url = 'grpc://10.178.10.147:7051'
+        }
         bmt.query(certOptions,
-            'query', [req.query.certNo]
+            'query', [req.query.serialNo]
         ).then((query_responses) => {
             console.log("returned from query ", query_responses)
-
             if (query_responses[0] instanceof Error) {
-                console.error("error from query = ", query_responses[0])
+                res.render('cert.hbs', {
+                    pageTitle: '인증정보 조회'
+                })
             } else if (!query_responses.length) {
                 console.log("No payloads were returned from query")
+                res.render('cert.hbs', {
+                    pageTitle: '인증정보 조회'
+                })
             } else {
                 console.log("Parsed result: ", JSON.parse(query_responses))
                 let result = JSON.parse(query_responses)
@@ -142,58 +152,6 @@ app.get('/account', (req, res) => {
     }
 
 })
-
-// app.get('/certinfo', (req, res) => {
-//     console.log('query parameter: ', req.query.certNo)
-//     bmt.query(certOptions,
-//         'query', [req.query.certNo]
-//     ).then((query_responses) => {
-//         console.log("returned from query ", query_responses)
-
-//         if (query_responses[0] instanceof Error) {
-//             console.error("error from query = ", query_responses[0])
-//         } else if (!query_responses.length) {
-//             console.log("No payloads were returned from query")
-//         } else {
-//             console.log("Parsed result: ", JSON.parse(query_responses))
-//             let result = JSON.parse(query_responses)
-//             res.render('certinfo.hbs', {
-//                 pageTitle: '인증 정보'
-//             })
-//         }
-//     }).catch((err) => {
-//         console.error("Caught Error", err)
-//     })
-// })
-
-/*
-app.get('/account', (req, res) => {
-    console.log('query parameter: ', req.query.account)
-    bmt.query(pointOptions,
-        'queryAccount', [req.query.account]
-    ).then((query_responses) => {
-        console.log("returned from query ", query_responses)
-
-        if (query_responses[0] instanceof Error) {
-            console.error("error from query = ", query_responses[0])
-        } else if (!query_responses.length) {
-            console.log("No payloads were returned from query")
-        } else {
-            console.log("Parsed result: ", JSON.parse(query_responses))
-            let result = JSON.parse(query_responses)
-            res.render('info.hbs', {
-                pageTitle: 'Account',
-                accountNo: req.query.account,
-                accountType: result.accountType,
-                issuerAccount: result.issuerAccount,
-                accountAmount: result.amount,
-            })
-        }
-    }).catch((err) => {
-        console.error("Caught Error", err)
-    })
-})
-*/
 
 app.post('/transferpoint', (req, res) => {
     let transactionId = uuidv4()
