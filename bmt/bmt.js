@@ -103,7 +103,7 @@ function invoke(options, fcn, args) {
 
                     if (code !== 'VALID') {
                         console.error('The transaction was invalid, code = ' + code)
-                        reject()
+                        reject(code)
                     } else {
                         // console.log('The transaction has been committed on peer ' + eh._ep._endpoint.addr)
                         resolve()
@@ -118,10 +118,8 @@ function invoke(options, fcn, args) {
                 result.payload = proposalResponses[0].response.payload
                 return result // the first returned value is from the 'sendPromise' which is from the 'sendTransaction()' call
             }).catch((err) => {
-                console.error(
-                    'Failed to send transaction and get notifications within the timeout period.'
-                )
-                return 'Failed to send transaction and get notifications within the timeout period.'
+                console.error(err)
+                return err
             })
         } else {
             console.error(
@@ -129,6 +127,9 @@ function invoke(options, fcn, args) {
             )
             return 'Failed to send Proposal or receive valid response. Response null or status is not 200. exiting...'
         }
+    }).catch((err) => {
+        console.error(err)
+        return err
     })
 }
 

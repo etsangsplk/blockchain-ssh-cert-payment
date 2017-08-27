@@ -38,7 +38,7 @@ let options = {
         'grpc://10.178.195.150:7051'
     ],
     event_url: '',
-    orderer_url: 'grpc://10.178.10.131:7050'
+    orderer_url: 'grpc://10.178.10.189:7050'
 }
 
 let ranNum = Math.floor(Math.random() * options.endorser_url.length)
@@ -91,7 +91,7 @@ function saveCertificates(call, callback) {
     bmt.invoke(options,
         'createCertificates', [call.request.certificateSets]
     ).then((response) => {
-        // console.log("invoke response: ", response)
+        if (!response.status) { console.log("invoke response: ", response) }
         if (response.status === 'SUCCESS') {
             console.log('Successfully sent transaction to the orderer.')
             data.result = true
