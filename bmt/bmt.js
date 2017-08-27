@@ -94,7 +94,7 @@ function invoke(options, fcn, args) {
                 let handle = setTimeout(() => {
                     eh.disconnect()
                     reject()
-                }, 30000)
+                }, 180000)
 
                 eh.registerTxEvent(transactionID, (tx, code) => {
                     clearTimeout(handle)
