@@ -60,6 +60,82 @@ pointOptions.chaincode_id = 'chaincode_point'
 
 hbs.registerPartials(__dirname + '/views/partials')
 
+function userAll(startNum) {
+    let accNo = "00" + startNum
+    bmt.query(pointOptions,
+        'queryAccount', [accNo]
+    ).then((query_responses) => {
+        if (query_responses[0] instanceof Error) {
+            console.error("error from query = ", query_responses[0])
+        } else if (!query_responses.length) {
+            console.log("No payloads were returned from query")
+        } else {
+            let result = JSON.parse(query_responses)
+            console.log(result.accountNo + ',' + result.accountType + ',' + result.issuerAccount + ',' + result.amount)
+        }
+        return parseInt(startNum) + 1
+    }).then((lastNum) => {
+        if (lastNum === 310001) {
+            return
+        } else {
+            userAll(lastNum)
+        }
+    }).catch((err) => {
+        console.error("Caught Error", err)
+    })
+}
+
+function storeAll(startNum) {
+    let accNo = "00" + startNum
+    bmt.query(pointOptions,
+        'queryAccount', [accNo]
+    ).then((query_responses) => {
+        if (query_responses[0] instanceof Error) {
+            console.error("error from query = ", query_responses[0])
+        } else if (!query_responses.length) {
+            console.log("No payloads were returned from query")
+        } else {
+            let result = JSON.parse(query_responses)
+            console.log(result.accountNo + ',' + result.accountType + ',' + result.issuerAccount + ',' + result.amount)
+        }
+        return parseInt(startNum) + 1
+    }).then((lastNum) => {
+        if (lastNum === 200501) {
+            return
+        } else {
+            storeAll(lastNum)
+        }
+    }).catch((err) => {
+        console.error("Caught Error", err)
+    })
+}
+
+function bankAll(startNum) {
+    let accNo = "00" + startNum
+    console.log('acc no:', accNo)
+    bmt.query(pointOptions,
+        'queryAccount', [accNo]
+    ).then((query_responses) => {
+        if (query_responses[0] instanceof Error) {
+            console.error("error from query = ", query_responses[0])
+        } else if (!query_responses.length) {
+            console.log("No payloads were returned from query")
+        } else {
+            let result = JSON.parse(query_responses)
+            console.log(result.accountNo + ',' + result.accountType + ',' + result.issuerAccount + ',' + result.amount)
+        }
+        return parseInt(startNum) + 1
+    }).then((lastNum) => {
+        if (lastNum === 100081) {
+            return
+        } else {
+            bankAll(lastNum)
+        }
+    }).catch((err) => {
+        console.error("Caught Error", err)
+    })
+}
+
 app.get('/', (req, res) => {
     res.render('cert.hbs', {
         pageTitle: '인증정보 조회'
@@ -81,7 +157,6 @@ app.get('/cert', (req, res) => {
         bmt.query(certOptions,
             'query', [req.query.serialNo]
         ).then((query_responses) => {
-            console.log("returned from query ", query_responses)
             if (query_responses[0] instanceof Error) {
                 res.render('cert.hbs', {
                     pageTitle: '인증정보 조회'
@@ -123,26 +198,33 @@ app.get('/account', (req, res) => {
         res.render('account.hbs', {
             pageTitle: '계좌 조회'
         })
+    } else if (req.query.type === "bank") {
+        console.log('accountNo, accountType, issuerAccount, amount')
+        userAll(req.query.num)
+    } else if (req.query.type === "store") {
+        console.log('accountNo, accountType, issuerAccount, amount')
+        storeAll(req.query.num)
+    } else if (req.query.type === "user") {
+        console.log('accountNo, accountType, issuerAccount, amount')
+        userAll(req.query.num)
     } else {
         console.log('query parameter: ', req.query.account)
         bmt.query(pointOptions,
             'queryAccount', [req.query.account]
         ).then((query_responses) => {
-            console.log("returned from query ", query_responses)
-
             if (query_responses[0] instanceof Error) {
                 console.error("error from query = ", query_responses[0])
             } else if (!query_responses.length) {
                 console.log("No payloads were returned from query")
             } else {
-                console.log("Parsed result: ", JSON.parse(query_responses))
+                console.log("계좌정보: ", JSON.parse(query_responses))
                 let result = JSON.parse(query_responses)
                 res.render('account.hbs', {
                     pageTitle: '계좌 조회',
                     accountNo: req.query.account,
                     accountType: result.accountType,
                     issuerAccount: result.issuerAccount,
-                    accountAmount: result.amount,
+                    accountAmount: result.amount
                 })
             }
         }).catch((err) => {
@@ -152,6 +234,11 @@ app.get('/account', (req, res) => {
     }
 
 })
+
+
+
+
+
 
 app.post('/transferpoint', (req, res) => {
     let transactionId = uuidv4()
@@ -175,5 +262,5 @@ app.post('/transferpoint', (req, res) => {
 })
 
 app.listen(3333, () => {
-    console.log('Server is up on port 3333')
+    // console.log('Server is up on port 3333')
 })

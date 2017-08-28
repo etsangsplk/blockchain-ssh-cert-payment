@@ -17,11 +17,8 @@ let options = {
     user_id: 'PeerAdmin',
     channel_id: 'certificatechannel',
     chaincode_id: 'chaincode_certificate',
-    network_url: 'grpc://10.178.10.147:7051',
+    network_url: '',
     endorser_url: [
-        'grpc://10.178.10.162:7051',
-        'grpc://10.178.10.177:7051',
-        'grpc://10.178.10.181:7051',
         'grpc://10.178.10.183:7051',
         'grpc://10.178.10.184:7051',
         'grpc://10.178.10.187:7051',
@@ -36,17 +33,17 @@ let options = {
         'grpc://10.178.195.149:7051',
         'grpc://10.178.195.150:7051'
     ],
-    event_url: 'grpc://10.178.10.147:7053',
+    event_url: '',
     orderer_url: 'grpc://10.178.10.189:7050'
 }
 
-// let ranNum = Math.floor(Math.random() * options.endorser_url.length)
-// Set network url randomly from endorsers (default port: 7051)
-// options.network_url = options.endorser_url[ranNum]
-// Remove networkurl from endorser url
-// options.endorser_url.splice(ranNum, 1)
-// Set event hub url as same ip with network url and 7053 port
-// options.event_url = options.network_url.substring(0, options.network_url.length - 1) + '3'
+let ranNum = Math.floor(Math.random() * options.endorser_url.length)
+    // Set network url randomly from endorsers (default port: 7051)
+options.network_url = options.endorser_url[ranNum]
+    // Remove networkurl from endorser url
+options.endorser_url.splice(ranNum, 1)
+    // Set event hub url as same ip with network url and 7053 port
+options.event_url = options.network_url.substring(0, options.network_url.length - 1) + '3'
 
 function saveCertificate(call, callback) {
     let data = {

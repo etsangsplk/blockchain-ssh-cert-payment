@@ -13,6 +13,7 @@ service PeerMessagesService {
 	rpc verifySignature(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc revokeCertificate(CustomerCertificateRequest) returns (CustomerCertificateReply) {}
 	rpc stop(Empty) returns (Empty) {}
+	rpc checkRpc(Empty) returns (Empty) {}
 }
 
 message CustomerCertificateSetRequest {
