@@ -8,8 +8,19 @@ crypto-config/peerOrganization/users/Admin@domain.com/msp/signcert
 
 The private key's permission level need to be changed. 644 recommended.
 
+Change the key file name from *_sk to *-priv.
+
 ```shell
 chmod 644 {keyname}
 ```
 
-Create 
+Create directory at root location, name it as '.hfc-key-store'
+
+Locate the key file under the .hfc-key-store folder.
+
+Create JSON user file like [this](https://github.com/reoim/blockchain-bmt/edit/master/creds/PeerAdmin)
+
+Replace identity value as private key name without '-priv'.
+
+Replace cert value as new cert from signcert folder.
+
