@@ -18,9 +18,9 @@ Create directory at root location, name it as '.hfc-key-store'
 
 Locate the key file under the .hfc-key-store folder.
 
-Create JSON user file like [this](https://github.com/reoim/blockchain-bmt/edit/master/creds/PeerAdmin)
+Create JSON user file like [this](https://github.com/reoim/blockchain-bmt/blob/master/creds/PeerAdmin)
 
-Replace identity value as private key name without '-priv'.
+Replace signingIdentity value as private key name without '-priv'.
 
 Replace cert value as new cert from signcert folder.
 
